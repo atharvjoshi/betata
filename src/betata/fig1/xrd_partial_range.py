@@ -7,7 +7,7 @@ import numpy as np
 from betata import plt
 import matplotlib.ticker as tck
 
-XRD_COLOR = "#762A83"
+TRACE_COLOR = "#762A83"
 
 
 @dataclass
@@ -64,10 +64,10 @@ def plot_data(
     """ """
     ref_peaks = [] if ref_peaks is None else ref_peaks
 
-    fig, axis = plt.subplots(1, 1, figsize=figsize)
-    axis.set_yscale(yscale)
-    axis.set_xlabel(r"2$\theta$ (°)")
-    axis.set_ylabel("Intensity (A.U.)")
+    fig, ax = plt.subplots(1, 1, figsize=figsize)
+    ax.set_yscale(yscale)
+    ax.set_xlabel(r"2$\mathrm{\theta}$ (°)")
+    ax.set_ylabel("Intensity (A.U.)")
 
     if scan.domain is not None:
         left = np.argmin(np.abs(scan.angle - scan.domain[0]))
@@ -75,10 +75,10 @@ def plot_data(
     else:
         left, right = 0, len(scan.angle) - 1
 
-    axis.plot(scan.angle[left:right], scan.intensity[left:right], c=XRD_COLOR)
+    ax.plot(scan.angle[left:right], scan.intensity[left:right], c=TRACE_COLOR)
 
     for peak in ref_peaks:
-        axis.annotate(
+        ax.annotate(
             f"{peak.label}",
             (peak.label_xloc, peak.label_yloc),
             rotation="vertical",
@@ -86,9 +86,9 @@ def plot_data(
             horizontalalignment="center",
         )
 
-    axis.set_yticks([])
-    axis.xaxis.set_major_locator(tck.MultipleLocator(2))
-    axis.xaxis.set_minor_locator(tck.MultipleLocator(0.2))
+    ax.set_yticks([])
+    ax.xaxis.set_major_locator(tck.MultipleLocator(2))
+    ax.xaxis.set_minor_locator(tck.MultipleLocator(0.2))
 
     fig.tight_layout()
 
@@ -133,7 +133,7 @@ if __name__ == "__main__":
     AL203110_domain = scan.angle[AL203110_domain_mask]
     AL203110_argloc = np.argmax(scan.intensity[AL203110_domain_mask])
     AL2O3110.location = AL203110_domain[AL203110_argloc]
-    AL2O3110.label_xloc = AL2O3110.location + 1.5
+    AL2O3110.label_xloc = AL2O3110.location + 1
     AL2O3110.label_yloc = BTA002.label_yloc
 
     print(AL2O3110)

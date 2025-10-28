@@ -5,7 +5,9 @@ rcparams = plt.rcParams
 rcparams["font.sans-serif"] = "Avenir"
 rcparams["font.family"] = "sans-serif"
 rcparams["font.size"] = 16
+
 rcparams["lines.linewidth"] = 2
+rcparams["lines.markersize"] = 8
 
 rcparams["axes.linewidth"] = 2.0
 rcparams["axes.titlesize"] = 16

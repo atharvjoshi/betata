@@ -8,6 +8,8 @@ dependencies = [
     "ipykernel>=7.0.1",
     "matplotlib>=3.10.7",
     "numpy>=2.3.3",
+    "pandas>=2.3.3",
+    "uncertainties>=3.2.3",
 ]
 
 [build-system]
