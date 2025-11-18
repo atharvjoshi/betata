@@ -59,7 +59,6 @@ def plot_data(
     ref_peaks: list[RefPeak] = None,
     figsize=(6, 6),
     yscale="log",
-    figsavepath=None,
 ):
     """ """
     ref_peaks = [] if ref_peaks is None else ref_peaks
@@ -91,9 +90,6 @@ def plot_data(
     ax.xaxis.set_minor_locator(tck.MultipleLocator(0.2))
 
     fig.tight_layout()
-
-    if figsavepath is not None:
-        plt.savefig(figsavepath, dpi=300)
 
     return fig
 
@@ -134,7 +130,7 @@ if __name__ == "__main__":
     AL203110_argloc = np.argmax(scan.intensity[AL203110_domain_mask])
     AL2O3110.location = AL203110_domain[AL203110_argloc]
     AL2O3110.label_xloc = AL2O3110.location + 1
-    AL2O3110.label_yloc = BTA002.label_yloc
+    AL2O3110.label_yloc = BTA002.label_yloc - 500
 
     print(AL2O3110)
 
@@ -142,8 +138,11 @@ if __name__ == "__main__":
         scan,
         ref_peaks=[ATA110, BTA002, AL2O3110],
         yscale="linear",
-        figsize=(6, 5),
-        figsavepath=Path(__file__).parents[3] / "out/fig1/XRD.svg",
+        figsize=(8, 5),
     )
+
+    figsavepath = Path(__file__).parents[3] / "out/fig1/XRD.png"
+
+    plt.savefig(figsavepath, dpi=300, bbox_inches="tight")
 
     plt.show()

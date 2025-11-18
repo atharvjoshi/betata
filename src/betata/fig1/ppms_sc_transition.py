@@ -34,7 +34,7 @@ def extract_data(filepath, skip_header=None, usecols=None, names=True):
     return pd.DataFrame(data)
 
 
-def plot_data(x, y, yerr, figsize=(6, 6), figsavepath=None):
+def plot_data(x, y, yerr, figsize=(6, 6)):
     """ """
 
     fig, ax = plt.subplots(1, 1, figsize=figsize)
@@ -51,9 +51,6 @@ def plot_data(x, y, yerr, figsize=(6, 6), figsavepath=None):
     ax.yaxis.set_minor_locator(tck.MultipleLocator(10))
 
     fig.tight_layout()
-
-    if figsavepath is not None:
-        plt.savefig(figsavepath, dpi=300)
 
     return fig
 
@@ -96,8 +93,8 @@ if __name__ == "__main__":
         names=colmap.values(),
     )
 
-    # combine both datasets and trim temperature domain to below 5K
-    data = pd.concat([data_fr[data_fr["temperature"] < 5], data_lt])
+    # combine both datasets and trim temperature domain to below 1.5K
+    data = pd.concat([data_fr[data_fr["temperature"] < 1.5], data_lt])
     data = data.sort_values(by="temperature")
 
     # convert resistance to resistivity
@@ -114,7 +111,10 @@ if __name__ == "__main__":
         data["resistivity"],
         data["resistivity_std"],
         figsize=(6, 5),
-        figsavepath=Path(__file__).parents[3] / "out/fig1/PPMS.svg",
     )
+
+    figsavepath = Path(__file__).parents[3] / "out/fig1/PPMS.png"
+
+    plt.savefig(figsavepath, dpi=300, bbox_inches="tight")
 
     plt.show()
