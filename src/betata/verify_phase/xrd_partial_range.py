@@ -98,7 +98,7 @@ if __name__ == "__main__":
     """ """
 
     scan = XRDScan(
-        path=Path(__file__).parents[3] / "data/fig1/XRD_066.dql",
+        path=Path(__file__).parents[3] / "data/verify_phase/XRD_066.dql",
         domain=[30, 45],
     )
 
@@ -141,7 +141,7 @@ if __name__ == "__main__":
         figsize=(8, 5),
     )
 
-    figsavepath = Path(__file__).parents[3] / "out/fig1/XRD.png"
+    figsavepath = Path(__file__).parents[3] / "out/verify_phase/XRD.png"
 
     plt.savefig(figsavepath, dpi=300, bbox_inches="tight")
 

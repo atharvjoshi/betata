@@ -6,7 +6,7 @@ from PIL import Image, ImageDraw, ImageFont
 if __name__ == "__main__":
     """ """
 
-    image_folder = Path(__file__).parents[3] / "data/fig1"
+    image_folder = Path(__file__).parents[3] / "data/verify_phase"
     image_name = "20250416_HAADF_1445_5.70_Mx_Wiener_Filtered.jpg"
     image_path = image_folder / image_name
     inset_name = "20250416_HAADF_1445_5.70_Mx_FFT.jpg"
@@ -59,7 +59,7 @@ if __name__ == "__main__":
     #    font=font,
     #)
 
-    image_save_path = Path(__file__).parents[3] / "out/fig1/TEM_HAADF.png"
+    image_save_path = Path(__file__).parents[3] / "out/verify_phase/TEM_HAADF.png"
 
     inset = Image.open(inset_path)
     inset_cx, inset_cy = inset.size[0] / 2, inset.size[1] / 2

@@ -8,7 +8,7 @@ import numpy as np
 if __name__ == "__main__":
     """ """
 
-    fig_folder = Path(__file__).parents[3] / "out/fig1"
+    fig_folder = Path(__file__).parents[3] / "out/verify_phase"
     fig_1a_path = fig_folder / "TEM_HAADF.png"
     fig_1b_path = fig_folder / "XRD.png"
     fig_1c_path = fig_folder / "PPMS.png"
@@ -46,7 +46,7 @@ if __name__ == "__main__":
             ha="left",
         )
 
-    figsavepath = Path(__file__).parents[3] / "out/fig1/fig1.png"
+    figsavepath = Path(__file__).parents[3] / "out/verify_phase/fig1.png"
 
     # using tight layout adds unwanted whitespace
     plt.savefig(figsavepath, dpi=600, bbox_inches="tight")

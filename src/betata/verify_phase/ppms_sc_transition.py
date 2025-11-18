@@ -65,7 +65,7 @@ if __name__ == "__main__":
     x_section_area = film_thickness * channel_width
 
     # we combine data from the full range (fr) and low temp (lt) scans
-    datafolder = Path(__file__).parents[3] / "data/fig1"
+    datafolder = Path(__file__).parents[3] / "data/verify_phase"
     filepath_fr = datafolder / "PPMS_ch1_130_c2_230_fullrange.dat"
     filepath_lt = datafolder / "PPMS_ch1_130_c2_230_lowtemp.dat"
 
@@ -113,7 +113,7 @@ if __name__ == "__main__":
         figsize=(6, 5),
     )
 
-    figsavepath = Path(__file__).parents[3] / "out/fig1/PPMS.png"
+    figsavepath = Path(__file__).parents[3] / "out/verify_phase/PPMS.png"
 
     plt.savefig(figsavepath, dpi=300, bbox_inches="tight")
 
