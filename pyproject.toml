@@ -7,6 +7,7 @@ requires-python = ">=3.11,<3.14"
 dependencies = [
     "ipykernel>=7.0.1",
     "matplotlib>=3.10.7",
+    "nbconvert>=7.16.6",
     "numpy>=2.3.3",
     "pandas>=2.3.3",
     "rrfit",
