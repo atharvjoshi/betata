@@ -61,9 +61,8 @@ def add_spr_metadata(resonator: Resonator):
 
 def add_inductance_metadata(resonator: Resonator, ):
     """ """
-    film_id = resonator.name.split("_")[1]
-    inductance_sim_filepath = DATA_FOLDER / f"{film_id}_inductance_sim.csv"
-    df = pd.read_csv(inductance_sim_filepath)
+    lk_sim_filepath = DATA_FOLDER / f"{resonator.design_name}_lk_sim.csv"
+    df = pd.read_csv(lk_sim_filepath)
     pitch_um = round(resonator.pitch * 1e6)
     metadata_row = df.loc[(df["pitch (um)"] == pitch_um) & (df["l_s (pH/sq)"] == 0)]
     resonator.fr_geom, = metadata_row["fr_geom (GHz)"] * 1e9
