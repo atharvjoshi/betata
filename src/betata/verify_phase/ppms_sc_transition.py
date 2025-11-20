@@ -68,7 +68,7 @@ if __name__ == "__main__":
     datafolder = Path(__file__).parents[3] / "data/verify_phase"
     filepath_fr = datafolder / "PPMS_ch1_130_c2_230_fullrange.dat"
     filepath_lt = datafolder / "PPMS_ch1_130_c2_230_lowtemp.dat"
-
+3
     colmap = {
         3: "temperature",
         20: "resistance",

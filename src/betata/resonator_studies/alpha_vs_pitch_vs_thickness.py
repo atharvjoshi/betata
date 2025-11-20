@@ -20,9 +20,15 @@ if __name__ == "__main__":
     data = defaultdict(dict)
 
     for filepath in input_folder.iterdir():
+
         if filepath.suffix not in [".h5", ".hdf5"]:
             continue
+
         with h5py.File(filepath) as file:
+
+            if file.attrs["type"] == "LE":
+                continue
+
             pitch = file.attrs["pitch"]
             thickness = file.attrs["film_thickness"]
             fr_geom = file.attrs["fr_geom"]
