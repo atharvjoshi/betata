@@ -11,17 +11,21 @@ import numpy as np
 class Trace:
     """ """
 
+    # attributes common to all traces
     filename: str
     resonator_name: str
-    frequency: np.ndarray
-    s21imag: np.ndarray
-    s21real: np.ndarray
-    temperature: float
-    temperature_err: float
-    power: float
-    tau: float
-
     id: int = None
+
+    # attributes of raw data traces
+    frequency: np.ndarray = None
+    s21imag: np.ndarray = None
+    s21real: np.ndarray = None
+    temperature: float = None
+    temperature_err: float = None
+    power: float = None
+    tau: float = None
+
+    # attributes of fitted traces
     background_amp: float = None
     background_phase: float = None
     fr: float = None
@@ -59,11 +63,16 @@ def load_traces(folder: Path):
     for filepath in folder.iterdir():
         if filepath.suffix in [".h5", ".hdf5"]:
             traces.append(load_trace(filepath))
-    # id traces by power, then by temperature
-    traces.sort(key=attrgetter("power", "temperature"))
-    for idx, trace in enumerate(traces):
+
+    # id traces by power (decreasing), then by temperature (increasing)
+    def sort_fn(trace):
+        return (-attrgetter("power")(trace), attrgetter("temperature")(trace))
+    sorted_traces = sorted(traces, key=sort_fn)
+
+    for idx, trace in enumerate(sorted_traces):
         trace.id = idx
-    return traces
+
+    return sorted_traces
 
 def save_traces(traces: list[Trace], filepath: Path):
     """ """
