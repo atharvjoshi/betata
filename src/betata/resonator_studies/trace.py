@@ -41,7 +41,7 @@ class Trace:
     is_excluded: bool = None
 
 
-def load_trace(filepath: Path):
+def load_raw_trace(filepath: Path):
     """ """
     with h5py.File(filepath) as file:
         trace = Trace(
@@ -57,12 +57,17 @@ def load_trace(filepath: Path):
         )
     return trace
 
-def load_traces(folder: Path):
+def load_fitted_trace(filepath: Path):
     """ """
+
+def load_traces(folder: Path, raw=True):
+    """ raw: bool to specify whether to load a raw trace (True) or a fitted trace (False) """
+    load_fn = load_raw_trace if raw else load_fitted_trace
+
     traces = []
     for filepath in folder.iterdir():
         if filepath.suffix in [".h5", ".hdf5"]:
-            traces.append(load_trace(filepath))
+            traces.append(load_fn(filepath))
 
     # id traces by power (decreasing), then by temperature (increasing)
     def sort_fn(trace):
@@ -81,4 +86,9 @@ def save_traces(traces: list[Trace], filepath: Path):
             trace_group = file.require_group(trace.filename)
             for key, value in trace.__dict__.items():
                 if key not in ["frequency", "s21imag", "s21real", "filename"]:
-                    trace_group.attrs[key] = value
+                        
+                        #handle None values
+                        if value is None:
+                            value = h5py.Empty("S10")
+
+                        trace_group.attrs[key] = value
