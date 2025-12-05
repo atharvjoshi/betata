@@ -7,6 +7,7 @@ from operator import attrgetter
 import h5py
 import numpy as np
 
+
 @dataclass
 class Trace:
     """ """
@@ -41,7 +42,7 @@ class Trace:
     is_excluded: bool = None
 
 
-def load_raw_trace(filepath: Path):
+def load_trace(filepath: Path):
     """ """
     with h5py.File(filepath) as file:
         trace = Trace(
@@ -57,27 +58,63 @@ def load_raw_trace(filepath: Path):
         )
     return trace
 
-def load_fitted_trace(filepath: Path):
+
+def sort_traces_pt(traces: list[Trace]):
+    """sort traces by power (decreasing), then by temperature (increasing)"""
+
+    def sort_fn(trace):
+        """ """
+        return (-attrgetter("power")(trace), attrgetter("temperature")(trace))
+
+    return sorted(traces, key=sort_fn)
+
+
+def load_traces(folder: Path):
     """ """
-
-def load_traces(folder: Path, raw=True):
-    """ raw: bool to specify whether to load a raw trace (True) or a fitted trace (False) """
-    load_fn = load_raw_trace if raw else load_fitted_trace
-
     traces = []
     for filepath in folder.iterdir():
         if filepath.suffix in [".h5", ".hdf5"]:
-            traces.append(load_fn(filepath))
+            traces.append(load_trace(filepath))
 
     # id traces by power (decreasing), then by temperature (increasing)
-    def sort_fn(trace):
-        return (-attrgetter("power")(trace), attrgetter("temperature")(trace))
-    sorted_traces = sorted(traces, key=sort_fn)
-
+    sorted_traces = sort_traces_pt(traces)
     for idx, trace in enumerate(sorted_traces):
         trace.id = idx
 
     return sorted_traces
+
+
+def load_fitted_traces(filepath: Path):
+    """ """
+    traces = []
+    with h5py.File(filepath) as file:
+        for trace_name in file.keys():
+            trace_data = file[trace_name]
+            trace = Trace(
+                filename=trace_name,
+                resonator_name=trace_data.attrs["resonator_name"],
+                id=trace_data.attrs["id"],
+                temperature=trace_data.attrs.get("temperature"),
+                temperature_err=trace_data.attrs.get("temperature_err"),
+                power=trace_data.attrs.get("power"),
+                tau=trace_data.attrs.get("tau"),
+                background_amp=trace_data.attrs.get("background_amp"),
+                background_phase=trace_data.attrs.get("background_phase"),
+                fr=trace_data.attrs.get("fr"),
+                fr_err=trace_data.attrs.get("fr_err"),
+                Qi=trace_data.attrs.get("Qi"),
+                Qi_err=trace_data.attrs.get("Qi_err"),
+                Ql=trace_data.attrs.get("Ql"),
+                Ql_err=trace_data.attrs.get("Ql_err"),
+                absQc=trace_data.attrs.get("absQc"),
+                absQc_err=trace_data.attrs.get("absQc_err"),
+                phi=trace_data.attrs.get("phi"),
+                phi_err=trace_data.attrs.get("phi_err"),
+                is_excluded=trace_data.attrs.get("is_excluded"),
+            )
+            traces.append(trace)
+    return sort_traces_pt(traces)
+
 
 def save_traces(traces: list[Trace], filepath: Path):
     """ """
@@ -86,9 +123,8 @@ def save_traces(traces: list[Trace], filepath: Path):
             trace_group = file.require_group(trace.filename)
             for key, value in trace.__dict__.items():
                 if key not in ["frequency", "s21imag", "s21real", "filename"]:
-                        
-                        #handle None values
-                        if value is None:
-                            value = h5py.Empty("S10")
+                    # handle None values
+                    if value is None:
+                        value = h5py.Empty("S10")
 
-                        trace_group.attrs[key] = value
+                    trace_group.attrs[key] = value

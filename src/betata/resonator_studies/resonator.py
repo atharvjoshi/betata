@@ -6,8 +6,11 @@ from pathlib import Path
 import h5py
 import pandas as pd
 
+from betata.resonator_studies.trace import Trace
+
 DATA_FOLDER = Path(__file__).parents[3] / "data/resonator_studies"
 SPR_SIM_FILEPATH = DATA_FOLDER / "spr_sim.csv"
+
 
 @dataclass
 class Resonator:
@@ -32,39 +35,86 @@ class Resonator:
     fr_geom: float = None
     l_geom: float = None
 
+    # bare resonance frequency, measured at highest power and lowest temperature
+    fr_bare: float = None
+
+    # kinetic inductance fraction alpha calculated from bare frequency shifts
+    alpha_bare: float = None
+
     # simulated surface participation ratios
-    p_ms: float = None # metal-substrate
-    p_ma: float = None # metal-air
-    p_sa: float = None # substrate-air
-    p_sub: float = None # substrate
+    p_ms: float = None  # metal-substrate
+    p_ma: float = None  # metal-air
+    p_sa: float = None  # substrate-air
+    p_sub: float = None  # substrate
 
     # total attenuation in the input measurement chain
     line_attenuation: float = None
+
+    # list of fitted traces
+    traces: list[Trace] = None
+
+
+def load_resonator(filepath: Path) -> Resonator:
+    """ """
+    with h5py.File(filepath, "a") as file:
+        resonator = Resonator(
+            name=file.attrs["name"],
+            type=file.attrs["type"],
+            design_name=file.attrs["design_name"],
+            cooldown_name=file.attrs["cooldown_name"],
+            film_thickness=file.attrs["film_thickness"],
+            pitch=file.attrs["pitch"],
+            length=file.attrs.get("length"),
+            width=file.attrs.get("width"),
+            fr_geom=file.attrs.get("fr_geom"),
+            l_geom=file.attrs.get("l_geom"),
+            fr_bare=file.attrs.get("fr_bare"),
+            alpha_bare=file.attrs.get("alpha_bare"),
+            p_ms=file.attrs.get("p_ms"),
+            p_ma=file.attrs.get("p_ma"),
+            p_sa=file.attrs.get("p_sa"),
+            p_sub=file.attrs.get("p_sub"),
+            line_attenuation=file.attrs.get("line_attenuation"),
+            traces=file.attrs.get("traces"),
+        )
+    return resonator
+
 
 def save_resonator(resonator: Resonator, filepath: Path):
     """ """
     with h5py.File(filepath, "a") as file:
         for key, value in resonator.__dict__.items():
+            if key in ["traces"]:
+                continue
+
+            # handle None values
+            if value is None:
+                value = h5py.Empty("S10")
+
             file.attrs[key] = value
+
 
 def add_spr_metadata(resonator: Resonator):
     """ """
     df = pd.read_csv(SPR_SIM_FILEPATH)
     pitch_um = round(resonator.pitch * 1e6)
     metadata_row = df.loc[df["pitch (um)"] == pitch_um]
-    resonator.width, = metadata_row["width (um)"] * 1e-6
-    resonator.p_ms, = metadata_row["p_ms"]
-    resonator.p_ma, = metadata_row["p_ma"]
-    resonator.p_sa, = metadata_row["p_sa"]
-    resonator.p_sub, = metadata_row["p_sub"]
+    (resonator.width,) = metadata_row["width (um)"] * 1e-6
+    (resonator.p_ms,) = metadata_row["p_ms"]
+    (resonator.p_ma,) = metadata_row["p_ma"]
+    (resonator.p_sa,) = metadata_row["p_sa"]
+    (resonator.p_sub,) = metadata_row["p_sub"]
     return resonator
 
-def add_inductance_metadata(resonator: Resonator, ):
+
+def add_inductance_metadata(
+    resonator: Resonator,
+):
     """ """
     lk_sim_filepath = DATA_FOLDER / f"{resonator.design_name}_lk_sim.csv"
     df = pd.read_csv(lk_sim_filepath)
     pitch_um = round(resonator.pitch * 1e6)
     metadata_row = df.loc[(df["pitch (um)"] == pitch_um) & (df["l_s (pH/sq)"] == 0)]
-    resonator.fr_geom, = metadata_row["fr_geom (GHz)"] * 1e9
-    resonator.l_geom, = metadata_row["l (nH)"] * 1e-9
+    (resonator.fr_geom,) = metadata_row["fr_geom (GHz)"] * 1e9
+    (resonator.l_geom,) = metadata_row["l (nH)"] * 1e-9
     return resonator
