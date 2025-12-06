@@ -6,6 +6,7 @@ from operator import attrgetter
 
 import h5py
 import numpy as np
+from rrfit.plotfns import plot_hangerfit
 
 
 @dataclass
@@ -128,3 +129,18 @@ def save_traces(traces: list[Trace], filepath: Path):
                         value = h5py.Empty("S10")
 
                     trace_group.attrs[key] = value
+
+
+def plot_fitted_trace(trace: Trace, resonator_name: str):
+    """ """
+    folder = Path(__file__).parents[3] / f"data/resonator_studies/{resonator_name}"
+    for filepath in folder.iterdir():
+        if filepath.stem == trace.filename:
+            with h5py.File(filepath) as file:
+                trace.frequency = file["frequency"][:]
+                trace.s21imag = file["s21imag"][:]
+                trace.s21real = file["s21real"][:]
+
+    plot_title = f"Device {trace.resonator_name}, Trace #{trace.id}, Power {trace.power} dBm, Temp {trace.temperature * 1e3:.1f}mK"
+
+    plot_hangerfit(trace, plot_title=plot_title)

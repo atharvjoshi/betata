@@ -956,8 +956,8 @@ wheels = [
 
 [[package]]
 name = "rrfit"
-version = "1.0.1"
-source = { git = "https://github.com/T1-Team/rrfit.git#654d3001715d5aca6d9e8c381a1187c212d8c7d8" }
+version = "1.0.4"
+source = { git = "https://github.com/T1-Team/rrfit.git#4df92a7cd9ef73d248b51794ec9e95142b0122f4" }
 dependencies = [
     { name = "h5py" },
     { name = "lmfit" },

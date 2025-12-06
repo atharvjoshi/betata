@@ -1,9 +1,11 @@
 """ """
 
 from dataclasses import dataclass
+import json
 from pathlib import Path
 
 import h5py
+import lmfit
 import pandas as pd
 
 from betata.resonator_studies.trace import Trace
@@ -53,6 +55,16 @@ class Resonator:
     # list of fitted traces
     traces: list[Trace] = None
 
+    # fit parameters from the Q_int vs P, T sweep
+    qpt_fit_params: dict = None  # stored as a json string
+
+    # fit parameters from the ffs vs T sweep
+    ffs_fit_params: dict = None  # stored as a json string
+
+    # trace ids included in fits
+    qpt_fit_trace_ids: list[int] = None
+    ffs_fit_trace_ids: list[int] = None
+
 
 def load_resonator(filepath: Path) -> Resonator:
     """ """
@@ -76,7 +88,23 @@ def load_resonator(filepath: Path) -> Resonator:
             p_sub=file.attrs.get("p_sub"),
             line_attenuation=file.attrs.get("line_attenuation"),
             traces=file.attrs.get("traces"),
+            qpt_fit_params=file.attrs.get("qpt_fit_params"),
+            ffs_fit_params=file.attrs.get("ffs_fit_params"),
+            qpt_fit_trace_ids=file.attrs.get("qpt_fit_trace_ids"),
+            ffs_fit_trace_ids=file.attrs.get("ffs_fit_trace_ids"),
         )
+
+    # handle None values
+    for k, v in resonator.__dict__.items():
+        if isinstance(v, h5py._hl.base.Empty):
+            setattr(resonator, k, None)
+
+    # convert json strings to dicts
+    if resonator.qpt_fit_params is not None:
+        resonator.qpt_fit_params = json.loads(resonator.qpt_fit_params)
+    if resonator.ffs_fit_params is not None:
+        resonator.ffs_fit_params = json.loads(resonator.ffs_fit_params)
+
     return resonator
 
 
@@ -84,12 +112,17 @@ def save_resonator(resonator: Resonator, filepath: Path):
     """ """
     with h5py.File(filepath, "a") as file:
         for key, value in resonator.__dict__.items():
+            # ignore these attributes
             if key in ["traces"]:
                 continue
 
             # handle None values
             if value is None:
                 value = h5py.Empty("S10")
+
+            # handle dict values -> convert to json string
+            if isinstance(value, dict):
+                value = json.dumps(value)
 
             file.attrs[key] = value
 
@@ -107,9 +140,7 @@ def add_spr_metadata(resonator: Resonator):
     return resonator
 
 
-def add_inductance_metadata(
-    resonator: Resonator,
-):
+def add_inductance_metadata(resonator: Resonator):
     """ """
     lk_sim_filepath = DATA_FOLDER / f"{resonator.design_name}_lk_sim.csv"
     df = pd.read_csv(lk_sim_filepath)
@@ -118,3 +149,25 @@ def add_inductance_metadata(
     (resonator.fr_geom,) = metadata_row["fr_geom (GHz)"] * 1e9
     (resonator.l_geom,) = metadata_row["l (nH)"] * 1e-9
     return resonator
+
+
+def add_qpt_fit_params(resonator: Resonator, fit_params: lmfit.Parameters):
+    """ """
+    fit_params_dict = {}
+    for param in fit_params.values():
+        param: lmfit.Parameter
+        fit_params_dict[param.name] = {}
+        fit_params_dict[param.name]["value"] = param.value
+        fit_params_dict[param.name]["stderr"] = param.stderr
+        fit_params_dict[param.name]["correl"] = param.correl
+    resonator.qpt_fit_params = fit_params_dict
+
+    # remove temporary attributes added by waterfall.py, if present
+    unwanted_attrs = ("best_params", "waterfall_fit_result")
+    for attr in unwanted_attrs:
+        if hasattr(resonator, attr):
+            delattr(resonator, attr)
+
+
+def add_ffs_fit_params(resonator: Resonator, fit_params: lmfit.Parameters):
+    """ """
