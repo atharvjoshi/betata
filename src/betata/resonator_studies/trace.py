@@ -142,5 +142,4 @@ def plot_fitted_trace(trace: Trace, resonator_name: str):
                 trace.s21real = file["s21real"][:]
 
     plot_title = f"Device {trace.resonator_name}, Trace #{trace.id}, Power {trace.power} dBm, Temp {trace.temperature * 1e3:.1f}mK"
-
     plot_hangerfit(trace, plot_title=plot_title)
