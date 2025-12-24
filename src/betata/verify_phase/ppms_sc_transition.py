@@ -37,7 +37,7 @@ def extract_data(filepath, skip_header=None, usecols=None, names=True):
 def plot_data(x, y, yerr, figsize=(6, 6)):
     """ """
 
-    fig, ax = plt.subplots(1, 1, figsize=figsize)
+    fig, ax = plt.subplots(figsize=figsize)
 
     ax.set_xlabel("Temperature (K)")
     ax.set_ylabel(r"Resistivity ($\mathrm{\mu \Omega}$.cm)")
@@ -68,7 +68,7 @@ if __name__ == "__main__":
     datafolder = Path(__file__).parents[3] / "data/verify_phase"
     filepath_fr = datafolder / "PPMS_ch1_130_c2_230_fullrange.dat"
     filepath_lt = datafolder / "PPMS_ch1_130_c2_230_lowtemp.dat"
-3
+
     colmap = {
         3: "temperature",
         20: "resistance",

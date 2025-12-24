@@ -25,4 +25,3 @@ rcparams["ytick.major.size"] = 10
 rcparams["ytick.major.width"] = 3
 rcparams["ytick.minor.size"] = 6
 rcparams["ytick.minor.width"] = 2
-
