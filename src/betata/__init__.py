@@ -1,3 +1,4 @@
+import numpy as np
 import matplotlib.pyplot as plt
 
 rcparams = plt.rcParams
@@ -25,3 +26,13 @@ rcparams["ytick.major.size"] = 10
 rcparams["ytick.major.width"] = 3
 rcparams["ytick.minor.size"] = 6
 rcparams["ytick.minor.width"] = 2
+
+rcparams["axes.spines.top"] = False
+rcparams["axes.spines.right"] = False
+
+# use 'blues' color cycle
+def get_blues(num, start=0.4, stop=0.9):
+    """ """
+    cmap = plt.get_cmap('Blues')
+    blues = [cmap(i) for i in np.linspace(start, stop, num)]
+    return blues

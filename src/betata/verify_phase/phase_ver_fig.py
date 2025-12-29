@@ -3,7 +3,6 @@
 from betata import plt
 from pathlib import Path
 from PIL import Image
-import numpy as np
 
 if __name__ == "__main__":
     """ """
@@ -17,7 +16,7 @@ if __name__ == "__main__":
     image_1b = Image.open(fig_1b_path)
     image_1c = Image.open(fig_1c_path)
 
-    # choose two-column (1, 3) figure layout
+    # choose three-column (1, 3) figure layout
     # rescale 1a to match height of 1b and 1c
     image_1a_dim = image_1b.height
     image_1a = image_1a.resize((image_1a_dim, image_1a_dim))
@@ -41,9 +40,10 @@ if __name__ == "__main__":
             1,
             labels[i],
             transform=ax.transAxes,
-            size=14,
+            size=10,
             va="top",
             ha="left",
+            fontweight="bold",
         )
 
     figsavepath = Path(__file__).parents[3] / "out/verify_phase/fig1.png"

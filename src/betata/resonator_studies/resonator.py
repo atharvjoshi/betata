@@ -6,12 +6,14 @@ from pathlib import Path
 
 import h5py
 import lmfit
+import numpy as np
 import pandas as pd
 
-from betata.resonator_studies.trace import Trace
+from betata.resonator_studies.trace import Trace, load_fitted_traces
 
 DATA_FOLDER = Path(__file__).parents[3] / "data/resonator_studies"
 SPR_SIM_FILEPATH = DATA_FOLDER / "spr_sim.csv"
+OUTPUT_FOLDER = Path(__file__).parents[3] / "out/resonator_studies"
 
 
 @dataclass
@@ -40,8 +42,19 @@ class Resonator:
     # bare resonance frequency, measured at highest power and lowest temperature
     fr_bare: float = None
 
-    # kinetic inductance fraction alpha calculated from bare frequency shifts
+    # kinetic inductance and fraction alpha calculated from bare frequency shifts
+    l_kin: float = None
+    l_kin_err: float = None
     alpha_bare: float = None
+    alpha_bare_err: float = None
+
+    # coefficient to convert kinetic inductance to sheet inductance
+    N_sq: float = None
+    N_sq_err: float = None
+
+    # estimated sheet inductance
+    l_sheet: float = None
+    l_sheet_err: float = None
 
     # simulated surface participation ratios
     p_ms: float = None  # metal-substrate
@@ -81,7 +94,14 @@ def load_resonator(filepath: Path) -> Resonator:
             fr_geom=file.attrs.get("fr_geom"),
             l_geom=file.attrs.get("l_geom"),
             fr_bare=file.attrs.get("fr_bare"),
+            l_kin=file.attrs.get("l_kin"),
+            l_kin_err=file.attrs.get("l_kin_err"),
             alpha_bare=file.attrs.get("alpha_bare"),
+            alpha_bare_err=file.attrs.get("alpha_bare_err"),
+            N_sq=file.attrs.get("N_sq"),
+            N_sq_err=file.attrs.get("N_sq_err"),
+            l_sheet=file.attrs.get("l_sheet"),
+            l_sheet_err=file.attrs.get("l_sheet_err"),
             p_ms=file.attrs.get("p_ms"),
             p_ma=file.attrs.get("p_ma"),
             p_sa=file.attrs.get("p_sa"),
@@ -108,8 +128,31 @@ def load_resonator(filepath: Path) -> Resonator:
     return resonator
 
 
-def save_resonator(resonator: Resonator, filepath: Path):
+def load_resonators() -> list[Resonator]:
     """ """
+    resonators: list[Resonator] = []
+
+    # each file in the output folder is an hdf5 file storing resonator metadata
+    for resonator_file in OUTPUT_FOLDER.iterdir():
+        if resonator_file.suffix not in (".h5", ".hdf5"):
+            continue
+
+        resonator = load_resonator(resonator_file)
+        resonator.traces = load_fitted_traces(resonator_file)
+        resonators.append(resonator)
+
+    return resonators
+
+
+def save_resonator(resonator: Resonator, filepath: Path = None):
+    """ """
+
+    if filepath is None:
+        for resonator_file in OUTPUT_FOLDER.iterdir():
+            if resonator_file.stem == resonator.name:
+                filepath = resonator_file
+                break
+
     with h5py.File(filepath, "a") as file:
         for key, value in resonator.__dict__.items():
             # ignore these attributes
@@ -169,5 +212,23 @@ def add_qpt_fit_params(resonator: Resonator, fit_params: lmfit.Parameters):
             delattr(resonator, attr)
 
 
-def add_ffs_fit_params(resonator: Resonator, fit_params: lmfit.Parameters):
+def map_ls_to_lk(
+    dataframe: pd.DataFrame,
+) -> dict[int, (np.ndarray, np.ndarray, lmfit.model.ModelResult)]:
     """ """
+    result = {}
+
+    def fit_fn(x, nsq):
+        return x * nsq * 1e-3  # convert pH to nH
+
+    for pitch, group in dataframe.groupby("pitch (um)"):
+        sorted_group = group.sort_values(by="l_s (pH/sq)", ascending=True)
+        l_sheet = np.array(sorted_group["l_s (pH/sq)"])
+        L = np.array(sorted_group["l (nH)"])
+        l_geom = L[0]
+        l_kin = L - l_geom
+
+        fit_result = lmfit.Model(fit_fn).fit(l_kin, x=l_sheet, nsq=50)
+        result[pitch] = (l_sheet, l_kin, fit_result)
+
+    return result
