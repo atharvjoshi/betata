@@ -6,19 +6,20 @@ import lmfit
 import numpy as np
 from uncertainties import ufloat
 
-from betata import plt
+from betata import plt, get_purples
 from betata.resonator_studies.resonator import Resonator, load_resonator
 
-ATA_COLOR = "#FF7900"
-BTA_COLOR = "#762A83"
-SAPPHIRE_COLOR = "#474A51"
+ATA_COLOR = "darkorange"  # "#FF7900"
+BTA_COLOR = get_purples(1, 0.9, 0.9)[0]
+SAPPHIRE_COLOR = "k"  # "#474A51"
+DOT_TRANSPARENCY = 0.85
 FILL_TRANSPARENCY = 0.25
 
 ATA_TAN_DELTA = ufloat(8.1e-4, 0.6e-4)
 SAPPHIRE_TAN_DELTA = ufloat(1.3e-7, 0.2e-7)
 P_SUB = 0.90  # assume negligible variation across resonator types/pitches
 
-REJECTION_THRESHOLD = 0.75  # relative error
+REJECTION_THRESHOLD = 0.80  # relative error
 
 
 def load_resonators(folder: Path) -> list[Resonator]:
@@ -50,7 +51,16 @@ def plot_data(x, y, yerr, figsize=(10, 7), ylim=(1e5, 2e7), xlim=(3e-3, 0.5e-4))
     ax.set_xlabel(r"Surface participation ratio ($p_{\mathrm{MS}})$")
     ax.set_ylabel(r"$Q_{\mathrm{TLS,0}}$")
 
-    ax.errorbar(x, y, yerr=yerr, ls="", c=BTA_COLOR, marker="o")
+    ax.errorbar(
+        x,
+        y,
+        yerr=yerr,
+        ls="",
+        c=BTA_COLOR,
+        marker="o",
+        alpha=DOT_TRANSPARENCY,
+        zorder=1,
+    )
 
     ax.set_xlim(*xlim)
     ax.set_ylim(*ylim)
@@ -71,7 +81,7 @@ def add_surface_loss_tangent(
     """ """
     p_ms = np.logspace(np.log10(xmin), np.log10(xmax), 100)
     q_tls0 = 1 / (p_ms * tan_delta)
-    axis.plot(p_ms, q_tls0, **plot_params)
+    axis.plot(p_ms, q_tls0, **plot_params, zorder=-1)
     if tan_delta_err is not None:
         axis.fill_between(
             p_ms,
@@ -79,6 +89,7 @@ def add_surface_loss_tangent(
             1 / (p_ms * (tan_delta + tan_delta_err / 2)),
             color=plot_params["color"],
             alpha=FILL_TRANSPARENCY,
+            zorder=-1,
         )
     return axis
 
@@ -91,7 +102,7 @@ def add_bulk_loss_tangent(
     **plot_params,
 ):
     """ """
-    axis.axhline(1 / tan_delta, **plot_params)
+    axis.axhline(1 / tan_delta, **plot_params, zorder=-1)
     if tan_delta_err is not None and xlim is not None:
         xmin, xmax = xlim
         p_ms = np.logspace(np.log10(xmin), np.log10(xmax), 100)
@@ -101,6 +112,7 @@ def add_bulk_loss_tangent(
             1 / (tan_delta + tan_delta_err / 2),
             color=plot_params["color"],
             alpha=FILL_TRANSPARENCY,
+            zorder=-1,
         )
     return axis
 
@@ -110,9 +122,9 @@ if __name__ == "__main__":
 
     resonator_folder = Path(__file__).parents[4] / "out/resonator_studies"
     resonators = load_resonators(resonator_folder)
-    figsavepath = resonator_folder / "wang_plot_100-500nm.png"
+    figsavepath = resonator_folder / "wang_plot.png"
 
-    min_thickness, max_thickness = 90e-9, 500e-9
+    min_thickness, max_thickness = 0e-9, 2000e-9
 
     p_ms, q_tls0, q_tls0_err = [], [], []
     for resonator in resonators:
@@ -133,7 +145,7 @@ if __name__ == "__main__":
     p_ms, q_tls0, q_tls0_err = np.array(p_ms), np.array(q_tls0), np.array(q_tls0_err)
 
     p_ms_lim = (3e-3, 0.5e-4)
-    q_tls0_lim = (1e5, 2e7)
+    q_tls0_lim = (1e5, 1.5e7)
     figure, axis = plot_data(
         p_ms,
         q_tls0,
@@ -163,8 +175,8 @@ if __name__ == "__main__":
         SAPPHIRE_TAN_DELTA.n,
         axis,
         color=SAPPHIRE_COLOR,
-        ls="--",
-        label="Bulk",
+        #ls="--",
+        label=r"Bulk",
         tan_delta_err=SAPPHIRE_TAN_DELTA.s,
         xlim=p_ms_lim,
     )
@@ -175,8 +187,8 @@ if __name__ == "__main__":
         *p_ms_lim,
         tan_delta_err=ATA_TAN_DELTA.s,
         color=ATA_COLOR,
-        ls="--",
-        label=r"$\alpha\mathrm{-Ta}$",
+        #ls="--",
+        label=r"$\mathrm{\alpha}$-Ta",
     )
 
     bta_tan_delta = result.params["tan_delta_surf"].value
@@ -187,10 +199,10 @@ if __name__ == "__main__":
         *p_ms_lim,
         tan_delta_err=bta_tan_delta_err,
         color=BTA_COLOR,
-        ls="--",
-        label=r"$\beta\mathrm{-Ta}$",
+        #ls="--",
+        label=r"$\mathrm{\beta}$-Ta",
     )
 
-    plt.legend(loc="lower right")
+    plt.legend(loc="lower right", frameon=False)
     plt.savefig(figsavepath, dpi=300, bbox_inches="tight")
     plt.show()

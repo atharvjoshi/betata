@@ -2,13 +2,14 @@
 
 from pathlib import Path
 
-from betata import plt
+from betata import plt, get_purples
 import pandas as pd
 import numpy as np
 import matplotlib.ticker as tck
 from uncertainties import unumpy
 
-TRACE_COLOR = "#762A83"
+TRACE_COLOR = get_purples(1, 0.9, 0.9,)[0]
+TRANSPARENCY = 0.85
 
 
 def find_header_row(filepath, header="[Data]"):
@@ -42,7 +43,7 @@ def plot_data(x, y, yerr, figsize=(6, 6)):
     ax.set_xlabel("Temperature (K)")
     ax.set_ylabel(r"Resistivity ($\mathrm{\mu \Omega}$.cm)")
 
-    ax.errorbar(x, y, yerr=yerr, ls="--", c=TRACE_COLOR, marker="o")
+    ax.errorbar(x, y, yerr=yerr, ls="--", c=TRACE_COLOR, marker="o", alpha=TRANSPARENCY)
 
     ax.xaxis.set_major_locator(tck.MultipleLocator(0.5))
     ax.xaxis.set_minor_locator(tck.MultipleLocator(0.1))

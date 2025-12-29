@@ -30,9 +30,18 @@ rcparams["ytick.minor.width"] = 2
 rcparams["axes.spines.top"] = False
 rcparams["axes.spines.right"] = False
 
-# use 'blues' color cycle
+
+def get_color_cycle(cmap, num, start, stop):
+    """ """
+    colormap = plt.get_cmap(cmap)
+    return [colormap(i) for i in np.linspace(start, stop, num)]
+
+
 def get_blues(num, start=0.4, stop=0.9):
     """ """
-    cmap = plt.get_cmap('Blues')
-    blues = [cmap(i) for i in np.linspace(start, stop, num)]
-    return blues
+    return get_color_cycle("Blues", num, start, stop)
+
+
+def get_purples(num, start=0.4, stop=0.9):
+    """ """
+    return get_color_cycle("Purples", num, start, stop)

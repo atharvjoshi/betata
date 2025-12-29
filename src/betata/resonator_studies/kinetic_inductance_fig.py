@@ -19,7 +19,7 @@ if __name__ == "__main__":
         nrows=2,
         ncols=1,
         height_ratios=(image_2ab.height, image_2c.height),
-        figsize=(10, 12),
+        figsize=(8, 8),
     )
 
     # place images
@@ -28,39 +28,40 @@ if __name__ == "__main__":
         ax.imshow(images[i])
         ax.axis("off")
 
+    label_fontsize = 16
+
     # place text
     axes[0].text(
-        -0.04,
-        0.81,
+        -0.06,
+        0.97,
         "(a)",
         transform=axes[0].transAxes,
-        size=18,
+        size=label_fontsize,
         va="top",
         ha="left",
     )
 
     axes[0].text(
-        0.448,
-        0.81,
+        0.44,
+        0.97,
         "(b)",
         transform=axes[0].transAxes,
-        size=18,
+        size=label_fontsize,
         va="top",
         ha="left",
     )
 
     axes[1].text(
-        -0.04,
-        0.98,
+        -0.06,
+        0.99,
         "(c)",
         transform=axes[1].transAxes,
-        size=18,
+        size=label_fontsize,
         va="top",
         ha="left",
     )
 
-    plt.tight_layout()
-
+    fig.tight_layout()
     figsavepath = Path(__file__).parents[3] / "out/resonator_studies/fig2.png"
     plt.savefig(figsavepath, dpi=600, bbox_inches="tight")
 

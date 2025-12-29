@@ -62,7 +62,4 @@ if __name__ == "__main__":
         resonator.l_kin = u_l_kin.n
         resonator.l_kin_err = u_l_kin.s
 
-        print(resonator.name)
-        print(u_l_kin * 1e9)
-
         save_resonator(resonator)

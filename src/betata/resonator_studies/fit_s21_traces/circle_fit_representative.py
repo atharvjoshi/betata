@@ -7,10 +7,10 @@ from pathlib import Path
 import numpy as np
 from rrfit.fitfns import rr_s21_hanger
 
-from betata import plt
+from betata import plt, get_purples
 from betata.resonator_studies.trace import Trace, load_traces, load_fitted_traces
 
-BTA_COLOR = "#762A83"
+BTA_COLOR = get_purples(1, 0.9, 0.9,)[0]
 
 if __name__ == "__main__":
     """ """
@@ -54,7 +54,7 @@ if __name__ == "__main__":
         tau=0,
     )
 
-    fig, ax = plt.subplots(figsize=(6, 6))
+    fig, ax = plt.subplots(figsize=(5, 5))
 
     ax.scatter(
         s21_to_plot.real,
@@ -70,10 +70,10 @@ if __name__ == "__main__":
 
     ax.set_aspect("equal", "datalim")
 
-    ax.set_xticks([0.25, 0.5, 0.75, 1.0])
-    ax.set_yticks([-0.5, -0.25, 0.0, 0.25, 0.5])
+    #ax.set_xticks([0.25, 0.5, 0.75, 1.0])
+    #ax.set_yticks([-0.5, -0.25, 0.0, 0.25, 0.5])
 
-    ax.legend(frameon=False, ncol=2, loc="upper center", bbox_to_anchor=(0.5, 1.05))
+    #ax.legend(frameon=False, ncol=2, loc="upper center", bbox_to_anchor=(0.5, 1.05))
 
     fig.tight_layout()
 

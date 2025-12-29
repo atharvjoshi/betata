@@ -4,10 +4,10 @@ from dataclasses import dataclass
 from pathlib import Path
 import numpy as np
 
-from betata import plt
+from betata import plt, get_purples
 import matplotlib.ticker as tck
 
-TRACE_COLOR = "#762A83"
+TRACE_COLOR = get_purples(1, 0.9, 0.9,)[0]
 
 
 @dataclass

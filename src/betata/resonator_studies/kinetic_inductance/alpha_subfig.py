@@ -14,6 +14,7 @@ import numpy as np
 from betata import plt, get_blues
 from betata.resonator_studies.resonator import Resonator, load_resonators
 
+FIGSIZE = (8, 4)
 
 if __name__ == "__main__":
     """ """
@@ -36,7 +37,7 @@ if __name__ == "__main__":
             data_alpha[thickness][resonator.pitch] = resonator.alpha_bare
 
     # create subfigure
-    fig, (ax_freq, ax_alpha) = plt.subplots(1, 2, figsize=(10, 5), layout="constrained")
+    fig, (ax_freq, ax_alpha) = plt.subplots(1, 2, figsize=FIGSIZE)
     num_series = len(data_freq.keys())
     blues = get_blues(num_series, start=0.35, stop=0.95)
 
@@ -51,11 +52,14 @@ if __name__ == "__main__":
     fr_dummy_ghz = np.linspace(0, 30, 100)
     ax_freq.plot(fr_dummy_ghz, fr_dummy_ghz, ls="--", c="k")
 
-    ax_freq.set_xlabel(r"$f_{\mathrm{r, geom}}$ (GHz)")
-    ax_freq.set_ylabel(r"$f_{\mathrm{r}}$ (GHz)")
+    #ax_freq.set_xlabel(r"$f_{\mathrm{r, geom}}$ (GHz)")
+    #ax_freq.set_ylabel(r"$f_{\mathrm{r}}$ (GHz)")
+
+    ax_freq.set_xlabel(r"Simulated $f_{\mathrm{r}}$ (GHz)")
+    ax_freq.set_ylabel(r"Measured $f_{\mathrm{r}}$ (GHz)")
 
     ax_freq.set_xlim(3, 30)
-    ax_freq.set_ylim(3, 8)
+    ax_freq.set_ylim(3, 8.25)
 
     ax_freq.set_xticks([3, 5, 10, 15, 20, 25, 30])
     ax_freq.set_yticks([3, 4, 5, 6, 7, 8])
@@ -71,24 +75,25 @@ if __name__ == "__main__":
     ax_alpha.set_ylabel(r"KI fraction $\alpha$")
 
     ax_alpha.set_xlim(0, 17)
-    ax_alpha.set_ylim(0, 1)
+    ax_alpha.set_ylim(0, 1.05)
 
     ax_alpha.set_xticks([0, 2, 4, 6, 8, 10, 12, 14, 16])
     ax_alpha.set_yticks([0, 0.2, 0.4, 0.6, 0.8, 1.0])
 
     # add common legend
-    handles, labels = ax_freq.get_legend_handles_labels()
-    fig.legend(
-        handles,
-        labels,
-        ncols=num_series,
-        loc="upper center",
-        bbox_to_anchor=(0.0, 1.14, 1.0, 0.102),
-        mode="expand",
-        title="Film thickness (μm)",
-        borderaxespad=0.5,
-        frameon=False,
-    )
+    #handles, labels = ax_freq.get_legend_handles_labels()
+    #fig.legend(
+    #    handles,
+    #    labels,
+    #    ncols=num_series,
+    #    loc="upper center",
+    #    bbox_to_anchor=(0.0, 1.14, 1.0, 0.102),
+    #    mode="expand",
+    #    title="Film thickness (μm)",
+    #    borderaxespad=0.5,
+    #    frameon=False,
+    #)
 
+    fig.tight_layout()
     plt.savefig(figsavepath, dpi=300, bbox_inches="tight")
     plt.show()

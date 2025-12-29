@@ -28,7 +28,7 @@ if __name__ == "__main__":
         nrows=1,
         ncols=3,
         width_ratios=(image_1a.width, image_1b.width, image_1c.width),
-        figsize=(12, 3),
+        figsize=(13, 8),
     )
 
     for i, ax in enumerate(axes.flat):
@@ -43,7 +43,6 @@ if __name__ == "__main__":
             size=10,
             va="top",
             ha="left",
-            fontweight="bold",
         )
 
     figsavepath = Path(__file__).parents[3] / "out/verify_phase/fig1.png"
