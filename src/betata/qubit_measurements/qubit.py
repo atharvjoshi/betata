@@ -24,8 +24,18 @@ class Qubit:
     Ej: float = None
     Ec: float = None
 
+    t1: np.ndarray = None
+    t1_err: np.ndarray = None
+    t1_timestamp: np.ndarray = None
+    t1_trace_id: np.ndarray = None
+    t1_A: np.ndarray = None
+    t1_A_err: np.ndarray = None
+    t1_B: np.ndarray = None
+    t1_B_err: np.ndarray = None
+
     t1_avg: float = None
     t1_avg_err: float = None
+
     t2r_avg: float = None
     t2r_avg_err: float = None
     t2e_avg: float = None
@@ -62,9 +72,16 @@ def load_qubit(filepath: Path) -> Qubit:
             f_r=file.attrs["f_r"],
             chi=file.attrs["chi"],
             kappa=file.attrs["kappa"],
-            alpha=file.attrs["alpha"],
             Ej=file.attrs["Ej"],
             Ec=file.attrs["Ec"],
+            t1=file["t1"]["t1"][:],
+            t1_err=file["t1"]["t1_err"][:],
+            t1_timestamp=file["t1"]["t1_timestamp"][:],
+            t1_trace_id=file["t1"]["t1_trace_id"][:],
+            t1_A=file["t1"]["t1_A"][:],
+            t1_A_err=file["t1"]["t1_A_err"][:],
+            t1_B=file["t1"]["t1_B"][:],
+            t1_B_err=file["t1"]["t1_B_err"][:],
             t1_avg=file.attrs["t1_avg"],
             t1_avg_err=file.attrs["t1_avg_err"],
             t2r_avg=file.attrs["t2r_avg"],
@@ -97,30 +114,49 @@ def load_qubits() -> list[Qubit]:
 
 def save_qubit(qubit: Qubit, filepath: Path = None):
     """ """
+    t1_arrs = [
+        "t1",
+        "t1_err",
+        "t1_timestamp",
+        "t1_trace_id",
+        "t1_A",
+        "t1_A_err",
+        "t1_B",
+        "t1_B_err",
+    ]
 
     if filepath is None:
         for qubit_file in OUTPUT_FOLDER.iterdir():
-            if qubit_file.stem == qubit.name:
+            if qubit_file.suffix in [".h5", ".hdf5"] and qubit_file.stem == qubit.name:
                 filepath = qubit_file
                 break
 
     with h5py.File(filepath, "a") as file:
         # save attributes
         for key, value in qubit.__dict__.items():
-            # ignore these attributes
-            if key in []:
-                continue
+            if key in []:  # ignore these attributes
+                pass
+            elif key in t1_arrs:  # save T1 arrays
+                if value is None:  # create dummy stand-in dataset
+                    value = np.zeros(1)
 
-            # handle None values
-            if value is None:
-                value = h5py.Empty("S10")
+                t1_group = file.require_group("t1")
 
-            file.attrs[key] = value
+                if key in t1_group: # prepare to overwrite dataset
+                    del t1_group[key]
+
+                t1_group.create_dataset(key, data=value)
+            else:
+                # handle None values
+                if value is None:
+                    value = h5py.Empty("S10")
+
+                file.attrs[key] = value
 
         # save properties
         for prop in ["Delta", "q_avg", "q_avg_err"]:
             value = getattr(qubit, prop)
-    
+
             # handle None values
             if value is None:
                 value = h5py.Empty("S10")
