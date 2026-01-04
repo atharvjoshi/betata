@@ -6,7 +6,6 @@ import numpy as np
 import lmfit
 
 from betata import plt
-from betata.qubit_measurements.qubit import Qubit
 from betata.qubit_measurements.traces import T1Trace
 
 
@@ -92,6 +91,7 @@ def fit_t1_trace(
 def plot_t1_trace(trace: T1Trace, show_fit=True, figsize=(5, 5)):
     """ """
     tau_us = trace.tau * 1e6
+    tau_us_dummy = np.linspace(min(tau_us), max(tau_us), 1001)
 
     fig, ax = plt.subplots(figsize=figsize)
     ax.scatter(tau_us, trace.population, color="k", alpha=0.8, zorder=-1)
@@ -102,8 +102,8 @@ def plot_t1_trace(trace: T1Trace, show_fit=True, figsize=(5, 5)):
         T1_err_us = trace.T1_err * 1e6
         T1_str = f"{T1_us:.2f} ± {T1_err_us:.2f} μs"
         T1_popn = (trace.A / np.e) + trace.B
-        best_fit = t1_fit_fn(trace.tau, trace.A, trace.T1, trace.B)
-        ax.plot(tau_us, best_fit, color="r")
+        best_fit = t1_fit_fn(tau_us_dummy, trace.A, T1_us, trace.B)
+        ax.plot(tau_us_dummy, best_fit, color="r")
         ax.axhline(y=T1_popn, color="g", zorder=-2, alpha=0.5)
         ax.axvline(x=T1_us, color="g", zorder=-2, alpha=0.5)
 

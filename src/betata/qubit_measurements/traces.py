@@ -107,7 +107,7 @@ def save_t1_results(traces: list[T1Trace], qubit: Qubit):
     )
 
     qubit.t1 = np.array([tr.T1 for tr in traces])
-    qubit.t1_err = np.array([tr.T1 for tr in traces])
+    qubit.t1_err = np.array([tr.T1_err for tr in traces])
     qubit.t1_A = np.array([tr.A for tr in traces])
     qubit.t1_A_err = np.array([tr.A_err for tr in traces])
     qubit.t1_B = np.array([tr.B for tr in traces])
@@ -117,5 +117,86 @@ def save_t1_results(traces: list[T1Trace], qubit: Qubit):
 
     qubit.t1_avg = np.mean(qubit.t1)
     qubit.t1_avg_err = np.std(qubit.t1)
+
+    save_qubit(qubit)
+
+
+@dataclass
+class T2ETrace:
+    """ """
+
+    id: int
+    qubit_name: str
+    qubit_frequency: float
+    readout_frequency: float
+    repetitions: int
+    pi2_pulse_amplitude: float
+    pi2_pulse_length: int
+    readout_pulse_amplitude: float
+    readout_pulse_length: int
+
+    timestamp: datetime
+    tau: np.ndarray
+    population: np.ndarray
+
+    T2E: float = None
+    T2E_err: float = None
+    A: float = None
+    A_err: float = None
+    B: float = None
+    B_err: float = None
+
+    is_excluded: bool = False
+
+
+def load_t2e_trace(filepath: Path) -> T2ETrace:
+    """ """
+    with h5py.File(filepath) as file:
+        t2e_trace = T2ETrace(
+            id=file.attrs["id"],
+            qubit_name=file.attrs["qubit_name"],
+            qubit_frequency=file.attrs["qubit_frequency"],
+            readout_frequency=file.attrs["readout_frequency"],
+            repetitions=file.attrs["repetitions"],
+            pi2_pulse_amplitude=file.attrs["pi2_pulse_amplitude"],
+            pi2_pulse_length=file.attrs["pi2_pulse_length"],
+            readout_pulse_amplitude=file.attrs["readout_pulse_amplitude"],
+            readout_pulse_length=file.attrs["readout_pulse_length"],
+            timestamp=datetime.strptime(file.attrs["timestamp"], "%Y-%m-%d %H:%M:%S"),
+            tau=file["tau"][:],
+            population=file["population"][:],
+        )
+    return t2e_trace
+
+
+def load_t2e_traces(folder: Path) -> list[T2ETrace]:
+    """ """
+    traces: list[T2ETrace] = []
+    for filepath in folder.iterdir():
+        if filepath.suffix in [".h5", ".hdf5"]:
+            traces.append(load_t2e_trace(filepath))
+    # sort traces by id
+    sorted_traces = sorted(traces, key=lambda trace: trace.id)
+    return sorted_traces
+
+
+def save_t2e_results(traces: list[T2ETrace], qubit: Qubit):
+    """ """
+    timestamp_0 = traces[0].timestamp
+    qubit.t2e_timestamp = np.array(
+        [np.abs((trace.timestamp - timestamp_0).total_seconds()) for trace in traces]
+    )
+
+    qubit.t2e = np.array([tr.T2E for tr in traces])
+    qubit.t2e_err = np.array([tr.T2E_err for tr in traces])
+    qubit.t2e_A = np.array([tr.A for tr in traces])
+    qubit.t2e_A_err = np.array([tr.A_err for tr in traces])
+    qubit.t2e_B = np.array([tr.B for tr in traces])
+    qubit.t2e_B_err = np.array([tr.B_err for tr in traces])
+
+    qubit.t2e_trace_id = np.array([tr.id for tr in traces])
+
+    qubit.t2e_avg = np.mean(qubit.t2e)
+    qubit.t2e_avg_err = np.std(qubit.t2e)
 
     save_qubit(qubit)

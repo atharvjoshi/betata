@@ -38,6 +38,16 @@ class Qubit:
 
     t2r_avg: float = None
     t2r_avg_err: float = None
+
+    t2e: np.ndarray = None
+    t2e_err: np.ndarray = None
+    t2e_timestamp: np.ndarray = None
+    t2e_trace_id: np.ndarray = None
+    t2e_A: np.ndarray = None
+    t2e_A_err: np.ndarray = None
+    t2e_B: np.ndarray = None
+    t2e_B_err: np.ndarray = None
+
     t2e_avg: float = None
     t2e_avg_err: float = None
 
@@ -86,6 +96,14 @@ def load_qubit(filepath: Path) -> Qubit:
             t1_avg_err=file.attrs["t1_avg_err"],
             t2r_avg=file.attrs["t2r_avg"],
             t2r_avg_err=file.attrs["t2r_avg_err"],
+            t2e=file["t2e"]["t2e"][:],
+            t2e_err=file["t2e"]["t2e_err"][:],
+            t2e_timestamp=file["t2e"]["t2e_timestamp"][:],
+            t2e_trace_id=file["t2e"]["t2e_trace_id"][:],
+            t2e_A=file["t2e"]["t2e_A"][:],
+            t2e_A_err=file["t2e"]["t2e_A_err"][:],
+            t2e_B=file["t2e"]["t2e_B"][:],
+            t2e_B_err=file["t2e"]["t2e_B_err"][:],
             t2e_avg=file.attrs["t2e_avg"],
             t2e_avg_err=file.attrs["t2e_avg_err"],
         )
@@ -125,6 +143,17 @@ def save_qubit(qubit: Qubit, filepath: Path = None):
         "t1_B_err",
     ]
 
+    t2e_arrs = [
+        "t2e",
+        "t2e_err",
+        "t2e_timestamp",
+        "t2e_trace_id",
+        "t2e_A",
+        "t2e_A_err",
+        "t2e_B",
+        "t2e_B_err",
+    ]
+
     if filepath is None:
         for qubit_file in OUTPUT_FOLDER.iterdir():
             if qubit_file.suffix in [".h5", ".hdf5"] and qubit_file.stem == qubit.name:
@@ -142,10 +171,20 @@ def save_qubit(qubit: Qubit, filepath: Path = None):
 
                 t1_group = file.require_group("t1")
 
-                if key in t1_group: # prepare to overwrite dataset
+                if key in t1_group:  # prepare to overwrite dataset
                     del t1_group[key]
 
                 t1_group.create_dataset(key, data=value)
+            elif key in t2e_arrs:  # save T2E arrays
+                if value is None:  # create dummy stand-in dataset
+                    value = np.zeros(1)
+
+                t2e_group = file.require_group("t2e")
+
+                if key in t2e_group:  # prepare to overwrite dataset
+                    del t2e_group[key]
+
+                t2e_group.create_dataset(key, data=value)
             else:
                 # handle None values
                 if value is None:
