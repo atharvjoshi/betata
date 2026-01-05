@@ -200,3 +200,108 @@ def save_t2e_results(traces: list[T2ETrace], qubit: Qubit):
     qubit.t2e_avg_err = np.std(qubit.t2e)
 
     save_qubit(qubit)
+
+
+@dataclass
+class T2RTrace:
+    """ """
+
+    id: int
+    qubit_name: str
+    qubit_frequency: float
+    readout_frequency: float
+    detuning: float
+    repetitions: int
+    pi2_pulse_amplitude: float
+    pi2_pulse_length: int
+    readout_pulse_amplitude: float
+    readout_pulse_length: int
+
+    timestamp: datetime
+    tau: np.ndarray
+    population: np.ndarray
+
+    T2R: float = None
+    T2R_err: float = None
+    As: list[float] = None
+    A_errs: list[float] = None
+    freqs: list[float] = None
+    freq_errs: list[float] = None
+    B: float = None
+    B_err: float = None
+
+    is_excluded: bool = False
+
+
+def load_t2r_trace(filepath: Path) -> T2RTrace:
+    """ """
+    with h5py.File(filepath) as file:
+        t2r_trace = T2RTrace(
+            id=file.attrs["id"],
+            qubit_name=file.attrs["qubit_name"],
+            qubit_frequency=file.attrs["qubit_frequency"],
+            readout_frequency=file.attrs["readout_frequency"],
+            detuning=file.attrs["detuning"],
+            repetitions=file.attrs["repetitions"],
+            pi2_pulse_amplitude=file.attrs["pi2_pulse_amplitude"],
+            pi2_pulse_length=file.attrs["pi2_pulse_length"],
+            readout_pulse_amplitude=file.attrs["readout_pulse_amplitude"],
+            readout_pulse_length=file.attrs["readout_pulse_length"],
+            timestamp=datetime.strptime(file.attrs["timestamp"], "%Y-%m-%d %H:%M:%S"),
+            tau=file["tau"][:],
+            population=file["population"][:],
+        )
+    return t2r_trace
+
+
+def load_t2r_traces(folder: Path) -> list[T2RTrace]:
+    """ """
+    traces: list[T2RTrace] = []
+    for filepath in folder.iterdir():
+        if filepath.suffix in [".h5", ".hdf5"]:
+            traces.append(load_t2r_trace(filepath))
+    # sort traces by id
+    sorted_traces = sorted(traces, key=lambda trace: trace.id)
+    return sorted_traces
+
+
+def save_t2r_results(traces: list[T2RTrace], qubit: Qubit):
+    """ """
+    timestamp_0 = traces[0].timestamp
+    qubit.t2r_timestamp = np.array(
+        [np.abs((trace.timestamp - timestamp_0).total_seconds()) for trace in traces]
+    )
+
+    max_n_freqs = 0
+    for trace in traces:
+        n_freqs = len(trace.freqs)
+        if n_freqs > max_n_freqs:
+            max_n_freqs = n_freqs
+
+    for trace in traces:  # pad 0s upto max_n_freqs to regularize array shapes
+        num_pad = max_n_freqs - len(trace.As)
+        padded_As = np.pad(trace.As, (0, num_pad))
+        padded_A_errs = np.pad(trace.A_errs, (0, num_pad))
+        padded_freqs = np.pad(trace.freqs, (0, num_pad))
+        padded_freq_errs = np.pad(trace.freq_errs, (0, num_pad))
+
+        trace.As = padded_As
+        trace.A_errs = padded_A_errs
+        trace.freqs = padded_freqs
+        trace.freq_errs = padded_freq_errs
+
+    qubit.t2r = np.array([tr.T2R for tr in traces])
+    qubit.t2r_err = np.array([tr.T2R_err for tr in traces])
+    qubit.t2r_As = np.array([tr.As for tr in traces])
+    qubit.t2r_A_errs = np.array([tr.A_errs for tr in traces])
+    qubit.t2r_freqs = np.array([tr.freqs for tr in traces])
+    qubit.t2r_freq_errs = np.array([tr.freq_errs for tr in traces])
+    qubit.t2r_B = np.array([tr.B for tr in traces])
+    qubit.t2r_B_err = np.array([tr.B_err for tr in traces])
+
+    qubit.t2r_trace_id = np.array([tr.id for tr in traces])
+
+    qubit.t2r_avg = np.mean(qubit.t2r)
+    qubit.t2r_avg_err = np.std(qubit.t2r)
+
+    save_qubit(qubit)
