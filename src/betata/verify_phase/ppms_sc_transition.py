@@ -8,7 +8,7 @@ import numpy as np
 import matplotlib.ticker as tck
 from uncertainties import unumpy
 
-TRACE_COLOR = get_purples(1, 0.9, 0.9,)[0]
+TRACE_COLOR = get_purples(1, 1.0, 1.0)[0]
 TRANSPARENCY = 0.85
 
 
@@ -53,7 +53,7 @@ def plot_data(x, y, yerr, figsize=(6, 6)):
 
     fig.tight_layout()
 
-    return fig
+    return fig, ax
 
 
 if __name__ == "__main__":
@@ -64,6 +64,9 @@ if __name__ == "__main__":
     channel_length = 370e-6
     channel_width = 25e-6
     x_section_area = film_thickness * channel_width
+
+    # tc is determined by reading off the interpolated temperature at 50% rho_n
+    tc_str = r"$\mathrm{T_c \sim}$ 0.69 K"
 
     # we combine data from the full range (fr) and low temp (lt) scans
     datafolder = Path(__file__).parents[3] / "data/verify_phase"
@@ -107,11 +110,20 @@ if __name__ == "__main__":
     data["resistivity"] = unumpy.nominal_values(resistivity_uarr)
     data["resistivity_std"] = unumpy.std_devs(resistivity_uarr)
 
-    figure = plot_data(
+    figure, axis = plot_data(
         data["temperature"],
         data["resistivity"],
         data["resistivity_std"],
         figsize=(6, 5),
+    )
+
+    axis.text(
+        0.7,
+        0.5,
+        tc_str,
+        horizontalalignment="center",
+        verticalalignment="center",
+        transform=axis.transAxes,
     )
 
     figsavepath = Path(__file__).parents[3] / "out/verify_phase/PPMS.png"

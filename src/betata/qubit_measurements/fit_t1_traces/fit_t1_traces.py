@@ -58,6 +58,7 @@ def fit_t1_trace(
     plot=True,
     verbose=False,
     save_folder=None,
+    close_fig=False,
     method="leastsq",
 ) -> lmfit.model.ModelResult:
     """ """
@@ -112,6 +113,7 @@ def plot_t1_trace(trace: T1Trace, show_fit=True, figsize=(5, 5)):
     ax.set_ylabel("$P_e$")
     ax.set_yticks([0.0, 0.2, 0.4, 0.6, 0.8, 1.00])
     ax.set_xscale("log")
+    #ax.set_yscale("log")
 
     fig.tight_layout()
 

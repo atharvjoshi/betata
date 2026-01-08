@@ -7,8 +7,8 @@ Run the script "alpha_bare.py" to find and save `alpha` before running this scri
 from collections import defaultdict
 from pathlib import Path
 
-import h5py
 import numpy as np
+from matplotlib import ticker
 
 from betata import plt, get_blues
 from betata.resonator_studies.resonator import Resonator, load_resonators
@@ -35,7 +35,7 @@ if __name__ == "__main__":
 
     sorted_data = dict(sorted(data.items()))
 
-    fig, ax = plt.subplots(figsize=(10, 6))
+    fig, ax = plt.subplots(figsize=(5, 5))
     blues = get_blues(len(sorted_data.keys()))
 
     for idx, (thickness, inner_dict) in enumerate(sorted_data.items()):
@@ -62,11 +62,19 @@ if __name__ == "__main__":
 
         ax.scatter(pitches_um, alphas, label=label, c=blues[idx])
 
-    ax.set(xlabel=r"CPW gap ($\mu$m)", ylabel=r"KI fraction $\alpha$")
-    ax.set_xticks([2, 4, 6, 8, 10, 12, 14, 16])
-    ax.set_yticks([0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0])
-    ax.legend(bbox_to_anchor=(1.05, 1))
+    ax.set(xlabel=r"CPW gap (μm)", ylabel=r"KI fraction $\alpha$")
+    
+    ax.set_xlim(1, 17)
+    ax.xaxis.set_major_locator(ticker.MultipleLocator(2))
+
+    ax.set_ylim(0, 1.05)
+    ax.yaxis.set_major_locator(ticker.MultipleLocator(0.2))
+    ax.yaxis.set_minor_locator(ticker.MultipleLocator(0.1))
+
+    #ax.legend(bbox_to_anchor=(1.05, 1))
 
     fig.tight_layout()
+
     plt.savefig(figsavepath, dpi=300, bbox_inches="tight")
+
     plt.show()

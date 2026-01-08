@@ -24,6 +24,9 @@ if __name__ == "__main__":
     images = [image_1a, image_1b, image_1c]
     labels = ["(a)", "(b)", "(c)"]
 
+    print(image_1a.height)
+    print(image_1a.width)
+
     fig, axes = plt.subplots(
         nrows=1,
         ncols=3,
@@ -48,6 +51,6 @@ if __name__ == "__main__":
     figsavepath = Path(__file__).parents[3] / "out/verify_phase/fig1.png"
 
     # using tight layout adds unwanted whitespace
-    plt.savefig(figsavepath, dpi=600, bbox_inches="tight")
+    #plt.savefig(figsavepath, dpi=600, bbox_inches="tight")
 
     plt.show()

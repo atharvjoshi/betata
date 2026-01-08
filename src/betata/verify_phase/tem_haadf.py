@@ -27,7 +27,7 @@ if __name__ == "__main__":
     scale_bar_pixel_width = 117 / image_crop_ratio
     scale_bar_physical_length = "2 nm"  # label
     scale_bar_color = (255, 255, 255)  # white
-    scale_bar_thickness = 10
+    scale_bar_thickness = 25
     scale_bar_x_pos = 50
     scale_bar_y_ofs = 35
     scale_bar_y_pos = cropped_image.height - scale_bar_y_ofs

@@ -10,7 +10,8 @@ from rrfit.fitfns import rr_s21_hanger
 from betata import plt, get_purples
 from betata.resonator_studies.trace import Trace, load_traces, load_fitted_traces
 
-BTA_COLOR = get_purples(1, 0.9, 0.9,)[0]
+BTA_COLOR = get_purples(1, 1.0, 1.0)[0]
+TRANSPARENCY = 0.85
 
 if __name__ == "__main__":
     """ """
@@ -54,26 +55,32 @@ if __name__ == "__main__":
         tau=0,
     )
 
-    fig, ax = plt.subplots(figsize=(5, 5))
+    fig, ax = plt.subplots(figsize=(4.5, 4.5))
 
     ax.scatter(
         s21_to_plot.real,
         s21_to_plot.imag,
-        c=BTA_COLOR,
+        color=BTA_COLOR,
         label="data",
-        alpha=0.85,
+        alpha=TRANSPARENCY,
     )
     ax.plot(s21_fit.real, s21_fit.imag, c=BTA_COLOR, label="model")
 
-    ax.set_xlabel(r"Re($\mathrm{S_{21}}$)")
-    ax.set_ylabel(r"Im($\mathrm{S_{21}}$)")
+    ax.set_xlabel(r"Re($\mathrm{S_{21}}$)", fontsize=24)
+    ax.set_ylabel(r"Im($\mathrm{S_{21}}$)", fontsize=24)
 
     ax.set_aspect("equal", "datalim")
 
-    #ax.set_xticks([0.25, 0.5, 0.75, 1.0])
-    #ax.set_yticks([-0.5, -0.25, 0.0, 0.25, 0.5])
+    ax.set_xticks([0.5, 1.0])
+    ax.set_yticks([0, -0.5])
 
-    #ax.legend(frameon=False, ncol=2, loc="upper center", bbox_to_anchor=(0.5, 1.05))
+    # make inset
+    ax.spines["top"].set_visible(True)
+    ax.spines["right"].set_visible(True)
+
+    for spine in ax.spines.values():
+        spine.set_linewidth(1.5)
+    ax.tick_params(axis="both", which="major", width=1.5, labelsize=24)
 
     fig.tight_layout()
 

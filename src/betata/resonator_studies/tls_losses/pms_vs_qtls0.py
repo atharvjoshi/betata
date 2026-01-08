@@ -10,7 +10,7 @@ from betata import plt, get_purples
 from betata.resonator_studies.resonator import Resonator, load_resonator
 
 ATA_COLOR = "darkorange"  # "#FF7900"
-BTA_COLOR = get_purples(1, 0.9, 0.9)[0]
+BTA_COLOR = get_purples(1, 1.0, 1.0)[0]
 SAPPHIRE_COLOR = "k"  # "#474A51"
 DOT_TRANSPARENCY = 0.85
 FILL_TRANSPARENCY = 0.25
@@ -39,7 +39,7 @@ def fit_delta_surf_sub(x, tan_delta_surf, tan_delta_sub, p_sub):
     return 1 / (x * tan_delta_surf + p_sub * tan_delta_sub)
 
 
-def plot_data(x, y, yerr, figsize=(10, 7), ylim=(1e5, 2e7), xlim=(3e-3, 0.5e-4)):
+def plot_data(x, y, yerr, figsize=(9, 6), ylim=(1e5, 2e7), xlim=(3e-3, 0.5e-4)):
     """ """
 
     fig, ax = plt.subplots(figsize=figsize)
@@ -175,7 +175,7 @@ if __name__ == "__main__":
         SAPPHIRE_TAN_DELTA.n,
         axis,
         color=SAPPHIRE_COLOR,
-        #ls="--",
+        ls="--",
         label=r"Bulk",
         tan_delta_err=SAPPHIRE_TAN_DELTA.s,
         xlim=p_ms_lim,
@@ -187,7 +187,7 @@ if __name__ == "__main__":
         *p_ms_lim,
         tan_delta_err=ATA_TAN_DELTA.s,
         color=ATA_COLOR,
-        #ls="--",
+        ls="--",
         label=r"$\mathrm{\alpha}$-Ta",
     )
 

@@ -7,7 +7,8 @@ import numpy as np
 from betata import plt, get_purples
 import matplotlib.ticker as tck
 
-TRACE_COLOR = get_purples(1, 0.9, 0.9,)[0]
+TRACE_COLOR = get_purples(1, 1.0, 1.0)[0]
+TRANSPARENCY = 0.85
 
 
 @dataclass
@@ -74,7 +75,12 @@ def plot_data(
     else:
         left, right = 0, len(scan.angle) - 1
 
-    ax.plot(scan.angle[left:right], scan.intensity[left:right], c=TRACE_COLOR)
+    ax.plot(
+        scan.angle[left:right],
+        scan.intensity[left:right],
+        color=TRACE_COLOR,
+        alpha=TRANSPARENCY,
+    )
 
     for peak in ref_peaks:
         ax.annotate(
@@ -99,7 +105,7 @@ if __name__ == "__main__":
 
     scan = XRDScan(
         path=Path(__file__).parents[3] / "data/verify_phase/XRD_066.dql",
-        domain=[30, 45],
+        domain=[30, 46],
     )
 
     scan.angle, scan.intensity = extract_data(scan.path)

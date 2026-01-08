@@ -4,12 +4,17 @@ from collections import defaultdict
 from pathlib import Path
 
 import numpy as np
+from mpl_toolkits.axes_grid1.inset_locator import inset_axes
+from matplotlib.cm import ScalarMappable
+from matplotlib import colors
 from rrfit.fitfns import dBmtoW
 from rrfit.waterfall import QIntVsTemp_consistent
 
 from betata import plt, get_purples
 from betata.resonator_studies.resonator import Resonator, load_resonator
 from betata.resonator_studies.trace import Trace, load_fitted_traces
+
+TRANSPARENCY = 0.85
 
 
 def get_qint_fit(resonator, temps, frs, qints, power, qc):
@@ -61,10 +66,12 @@ if __name__ == "__main__":
         if trace.id in resonator.qpt_fit_trace_ids and trace.power != -20:
             data[trace.power][trace.temperature] = trace
 
-    fig, ax = plt.subplots(figsize=(7, 5))
+    fig, ax = plt.subplots(figsize=(9, 6))
     num_series = len(data.keys())
-    purples = get_purples(num_series, start=0.25, stop=0.95)
+    purples = get_purples(num_series, start=0.40, stop=1.00)
+    powers = []
     for idx, (power, inner_dict) in enumerate(data.items()):
+        powers.append(power)
         temps = np.array(list(inner_dict.keys()))
         traces = list(inner_dict.values())
         frs = np.array([trace.fr for trace in traces])
@@ -86,6 +93,7 @@ if __name__ == "__main__":
             color=purples[idx],
             marker="o",
             label=f"{power} dBm",
+            alpha=TRANSPARENCY,
         )
 
         ax.plot(temps_dummy_mK, qint_fit, color=purples[idx])
@@ -95,8 +103,18 @@ if __name__ == "__main__":
 
     ax.set_yscale("log")
     ax.set_xticks([0, 20, 40, 60, 80, 100, 120])
+    ax.set_xticks([10, 30, 50, 70, 90, 110, 130], minor=True)
 
-    #ax.legend(frameon=False, loc="center right", bbox_to_anchor=(1.2, 0.7))
+    # colorbar legend
+    cbaxes = inset_axes(ax, width="20%", height="4%", loc="upper right", borderpad=2)
+    purple_cmap = colors.ListedColormap(purples).reversed()
+    purple_norm = colors.Normalize(vmin=-95, vmax=-25)
+    sm = ScalarMappable(cmap=purple_cmap, norm=purple_norm)
+    cbar = fig.colorbar(sm, cax=cbaxes, orientation="horizontal")
+    cbar.set_ticks([-90, -30])
+    cbar.ax.set_title("Power (dBm)")
+
+    # ax.legend(frameon=False, loc="center right", bbox_to_anchor=(1.2, 0.7))
 
     fig.tight_layout()
 
