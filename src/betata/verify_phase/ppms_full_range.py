@@ -1,0 +1,125 @@
+""" """
+
+from pathlib import Path
+
+from betata import plt, get_purples
+import pandas as pd
+import numpy as np
+import matplotlib.ticker as tck
+from uncertainties import unumpy
+
+TRACE_COLOR = get_purples(1, 1.0, 1.0)[0]
+TRANSPARENCY = 0.85
+
+
+def find_header_row(filepath, header="[Data]"):
+    """ """
+    header_row_num = None
+    with open(filepath) as file:
+        for idx, line in enumerate(file.readlines(), start=1):
+            if line.startswith(header):
+                header_row_num = idx
+                break
+    return header_row_num
+
+
+def extract_data(filepath, skip_header=None, usecols=None, names=True):
+    """ """
+    data = np.genfromtxt(
+        filepath,
+        delimiter=",",
+        skip_header=skip_header,
+        usecols=usecols,
+        names=names,
+    )
+    return pd.DataFrame(data)
+
+
+def plot_data(x, y, yerr, figsize=(6, 6)):
+    """ """
+
+    fig, ax = plt.subplots(figsize=figsize)
+
+    ax.set_xlabel("Temperature (K)")
+    ax.set_ylabel(r"Resistivity ($\mathrm{\mu \Omega}$.cm)")
+
+    ax.errorbar(x, y, yerr=yerr, ls="", c=TRACE_COLOR, marker="o", alpha=TRANSPARENCY)
+
+    ax.xaxis.set_major_locator(tck.MultipleLocator(50))
+    ax.xaxis.set_minor_locator(tck.MultipleLocator(10))
+
+    ax.set_yticks([0, 50, 100, 150, 200])
+    ax.set_ylim(-10, 205)
+    ax.yaxis.set_minor_locator(tck.MultipleLocator(10))
+
+    fig.tight_layout()
+
+    return fig, ax
+
+
+if __name__ == "__main__":
+    """ """
+
+    # hall bar dimensions in m
+    film_thickness = 263e-9
+    channel_length = 370e-6
+    channel_width = 25e-6
+    x_section_area = film_thickness * channel_width
+
+    # we combine data from the full range (fr) and low temp (lt) scans
+    datafolder = Path(__file__).parents[3] / "data/verify_phase"
+    filepath_fr = datafolder / "PPMS_ch1_130_c2_230_fullrange.dat"
+    filepath_lt = datafolder / "PPMS_ch1_130_c2_230_lowtemp.dat"
+
+    colmap = {
+        3: "temperature",
+        20: "resistance",
+        15: "resistance_std",
+    }
+
+    # extract full range data
+    skip_header_fr = find_header_row(filepath_fr)
+    data_fr = extract_data(
+        filepath_fr,
+        skip_header=skip_header_fr + 1,  # + 1 to handle NaN values for custom names
+        usecols=colmap.keys(),
+        names=colmap.values(),
+    )
+
+    # extract low temp data
+    skip_header_lt = find_header_row(filepath_lt)
+    data_lt = extract_data(
+        filepath_lt,
+        skip_header=skip_header_lt + 1,  # + 1 to handle NaN values for custom names
+        usecols=colmap.keys(),
+        names=colmap.values(),
+    )
+
+    # combine both datasets
+    data = pd.concat([data_fr, data_lt])
+    data = data.sort_values(by="temperature")
+    data = data[::2]  # plot a sparser dataset for clarity
+
+    # convert resistance to resistivity
+    resistance_uarr = unumpy.uarray(data["resistance"], data["resistance_std"])
+    resistivity_uarr = resistance_uarr * x_section_area / channel_length
+    # change resistivity units to microohm.cm
+    resistivity_uarr *= 1e8
+
+    data["resistivity"] = unumpy.nominal_values(resistivity_uarr)
+    data["resistivity_std"] = unumpy.std_devs(resistivity_uarr)
+
+    figure, axis = plot_data(
+        data["temperature"],
+        data["resistivity"],
+        data["resistivity_std"],
+        figsize=(6, 5),
+    )
+
+    print(data)
+
+    figsavepath = Path(__file__).parents[3] / "out/verify_phase/PPMS_full_range.png"
+
+    #plt.savefig(figsavepath, dpi=300, bbox_inches="tight")
+
+    plt.show()

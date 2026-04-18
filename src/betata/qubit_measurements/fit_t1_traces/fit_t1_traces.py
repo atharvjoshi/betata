@@ -95,7 +95,6 @@ def plot_t1_trace(trace: T1Trace, show_fit=True, figsize=(5, 5)):
     tau_us_dummy = np.linspace(min(tau_us), max(tau_us), 1001)
 
     fig, ax = plt.subplots(figsize=figsize)
-    ax.scatter(tau_us, trace.population, color="k", alpha=0.8, zorder=-1)
 
     T1_str = None
     if None not in [trace.T1, trace.T1_err, trace.A, trace.B] and show_fit:
@@ -103,10 +102,12 @@ def plot_t1_trace(trace: T1Trace, show_fit=True, figsize=(5, 5)):
         T1_err_us = trace.T1_err * 1e6
         T1_str = f"{T1_us:.2f} ± {T1_err_us:.2f} μs"
         T1_popn = (trace.A / np.e) + trace.B
-        best_fit = t1_fit_fn(tau_us_dummy, trace.A, T1_us, trace.B)
+        best_fit = t1_fit_fn(tau_us_dummy, trace.A, T1_us, 0)#trace.B)
         ax.plot(tau_us_dummy, best_fit, color="r")
         ax.axhline(y=T1_popn, color="g", zorder=-2, alpha=0.5)
         ax.axvline(x=T1_us, color="g", zorder=-2, alpha=0.5)
+
+    ax.scatter(tau_us, trace.population - trace.B, color="k", alpha=0.8, zorder=-1)
 
     ax.set_title(f"{trace.timestamp} #{trace.id} \n T1 = {T1_str}")
     ax.set_xlabel(r"$\tau$ (μs)")

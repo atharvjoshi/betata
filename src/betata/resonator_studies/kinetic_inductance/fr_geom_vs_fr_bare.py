@@ -1,7 +1,8 @@
 """
+
 Plot simulated frequency (with no sheet inductance) `f_geom` against measured bare frequency 'fr_bare'.
 
-Run the script "alpha_bare.py" to find and save `fr_bare` before running this script.
+Run the script "alpha_bare_fr_lkin.py" to find and save `fr_bare` before running this script.
 
 """
 
@@ -13,12 +14,14 @@ from matplotlib import ticker
 from betata import plt, get_blues
 from betata.resonator_studies.resonator import Resonator, load_resonators
 
+BLUES = get_blues(values=[0.20, 0.30, 0.45, 0.60, 0.75, 0.90, 1.0])
+TRANSPARENCY = 1.0
 
 if __name__ == "__main__":
     """ """
 
     resonator_folder = Path(__file__).parents[4] / "out/resonator_studies"
-    figsavepath = resonator_folder / "fr_sim_vs_fr_meas.png"
+    figsavepath = resonator_folder / "fr_sim_vs_fr_meas.svg"
 
     resonators: list[Resonator] = load_resonators()
     data: dict[int, tuple[list, list]] = {}
@@ -38,16 +41,21 @@ if __name__ == "__main__":
     sorted_data = dict(sorted(data.items()))
 
     fig, ax = plt.subplots(figsize=(5, 5))
-    blues = get_blues(len(sorted_data.keys()))
 
     for idx, (thickness, (fr_geoms, fr_bares)) in enumerate(sorted_data.items()):
         fr_geoms_ghz = np.array(fr_geoms) * 1e-9
         fr_bares_ghz = np.array(fr_bares) * 1e-9
         label = f"{round(thickness * 1e9)} nm"
-        ax.scatter(fr_geoms_ghz, fr_bares_ghz, label=label, color=blues[idx])
+        ax.scatter(
+            fr_geoms_ghz,
+            fr_bares_ghz,
+            label=label,
+            color=BLUES[idx],
+            alpha=TRANSPARENCY,
+        )
 
-    fr_dummy_ghz = np.linspace(0, 30, 100)
-    ax.plot(fr_dummy_ghz, fr_dummy_ghz, ls="--", c="k")
+    # fr_dummy_ghz = np.linspace(0, 30, 100)
+    # ax.plot(fr_dummy_ghz, fr_dummy_ghz, ls="--", c="k")
 
     ax.set_xlabel(r"Simulated $f_{\mathrm{r}}$ (GHz)")
     ax.set_ylabel(r"Measured $f_{\mathrm{r}}$ (GHz)")
@@ -62,6 +70,6 @@ if __name__ == "__main__":
 
     plt.tight_layout()
 
-    plt.savefig(figsavepath, dpi=300, bbox_inches="tight")
+    plt.savefig(figsavepath, dpi=600, bbox_inches="tight")
 
     plt.show()

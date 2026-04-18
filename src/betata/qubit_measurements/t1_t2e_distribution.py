@@ -14,15 +14,31 @@ T2E_TRACE_COLOR = "#003D7C"
 
 TRANSPARENCY = 0.85
 
+QUBITS_TO_INCLUDE = [
+    "Q1_2p61",
+    "Q2_2p80",
+    "Q3_2p73",
+    "Q4_2p90",
+    "Q5_3p19",
+    "Q6_4p69",
+    "Q7_4p83",
+    "Q8_4p93",
+    "Q9_5p15",
+    "Q10_5p36",
+    "Q11_5p78",
+]
+
 if __name__ == "__main__":
     """ """
 
     figsavepath = (
-        Path(__file__).parents[3] / "out/qubit_measurements/t1_t2e_distribution.png"
+        Path(__file__).parents[3] / "out/qubit_measurements/t1_t2e_distribution.svg"
     )
 
-    qubits = load_qubits()
-    qubits = sorted(qubits, key=lambda qubit: qubit.f_q)
+    qubits = load_qubits(names=QUBITS_TO_INCLUDE)
+    qubits = sorted(qubits, key=lambda qubit: (qubit.Ej / qubit.Ec))
+
+    ej_ec = [int(np.round(qubit.Ej / qubit.Ec)) for qubit in qubits]
 
     all_t1 = [qubit.t1 for qubit in qubits]
     all_t1_us = [t1 * 1e6 for t1 in all_t1]
@@ -68,16 +84,16 @@ if __name__ == "__main__":
 
     t2e_vplot_parts["cmeans"].set_color(T2E_TRACE_COLOR)
 
-    ax.set_xlim(0.1, 11.9)
-    ax.xaxis.set_major_locator(ticker.MultipleLocator(1))
-    ax.set_xlabel("Qubit")
+    ax.set_xticks([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11])
+    ax.set_xticklabels(ej_ec)
+    ax.set_xlabel(r"$E_\mathrm{J} \, / \, E_\mathrm{C}$")
 
-    ax.yaxis.set_major_locator(ticker.MultipleLocator(4))
+    ax.yaxis.set_major_locator(ticker.MultipleLocator(5))
     ax.yaxis.set_minor_locator(ticker.MultipleLocator(1))
     ax.set_ylabel(r"$\mathrm{\omega_q \times \{ T_1, T_{2, E} \} \; (\times 10^6)}$")
 
     fig.tight_layout()
 
-    plt.savefig(figsavepath, dpi=300, bbox_inches="tight")
+    #plt.savefig(figsavepath, dpi=600, bbox_inches="tight")
 
     plt.show()

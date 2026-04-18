@@ -48,7 +48,8 @@ def plot_data(x, y, yerr, figsize=(6, 6)):
     ax.xaxis.set_major_locator(tck.MultipleLocator(0.5))
     ax.xaxis.set_minor_locator(tck.MultipleLocator(0.1))
 
-    ax.yaxis.set_major_locator(tck.MultipleLocator(50))
+    ax.set_yticks([0, 50, 100, 150, 200])
+    ax.set_ylim(-10, 205)
     ax.yaxis.set_minor_locator(tck.MultipleLocator(10))
 
     fig.tight_layout()
@@ -60,13 +61,14 @@ if __name__ == "__main__":
     """ """
 
     # hall bar dimensions in m
-    film_thickness = 240e-9
+    film_thickness = 263e-9
     channel_length = 370e-6
     channel_width = 25e-6
     x_section_area = film_thickness * channel_width
 
     # tc is determined by reading off the interpolated temperature at 50% rho_n
-    tc_str = r"$\mathrm{T_c \sim}$ 0.69 K"
+    # error bar is determined by temp step size at the SC transition
+    tc_str = r"$\mathrm{T_c} = (0.7 \pm 0.1) \, \mathrm{K}$"
 
     # we combine data from the full range (fr) and low temp (lt) scans
     datafolder = Path(__file__).parents[3] / "data/verify_phase"
@@ -126,8 +128,8 @@ if __name__ == "__main__":
         transform=axis.transAxes,
     )
 
-    figsavepath = Path(__file__).parents[3] / "out/verify_phase/PPMS.png"
+    figsavepath = Path(__file__).parents[3] / "out/verify_phase/PPMS.svg"
 
-    plt.savefig(figsavepath, dpi=300, bbox_inches="tight")
+    plt.savefig(figsavepath, dpi=600, bbox_inches="tight")
 
     plt.show()

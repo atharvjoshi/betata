@@ -42,6 +42,9 @@ class Resonator:
     # bare resonance frequency, measured at highest power and lowest temperature
     fr_bare: float = None
 
+    # coupling quality factor, taken to be the average of all traces
+    Q_c: float = None
+
     # kinetic inductance and fraction alpha calculated from bare frequency shifts
     l_kin: float = None
     l_kin_err: float = None
@@ -94,6 +97,7 @@ def load_resonator(filepath: Path) -> Resonator:
             fr_geom=file.attrs.get("fr_geom"),
             l_geom=file.attrs.get("l_geom"),
             fr_bare=file.attrs.get("fr_bare"),
+            Q_c=file.attrs.get("Q_c"),
             l_kin=file.attrs.get("l_kin"),
             l_kin_err=file.attrs.get("l_kin_err"),
             alpha_bare=file.attrs.get("alpha_bare"),
@@ -131,6 +135,8 @@ def load_resonator(filepath: Path) -> Resonator:
 def load_resonators() -> list[Resonator]:
     """ """
     resonators: list[Resonator] = []
+    
+    #OUTPUT_FOLDER = Path("/Users/atharvjoshi/Documents/betata/out/beta_ta_on_si")
 
     # each file in the output folder is an hdf5 file storing resonator metadata
     for resonator_file in OUTPUT_FOLDER.iterdir():
@@ -146,6 +152,8 @@ def load_resonators() -> list[Resonator]:
 
 def save_resonator(resonator: Resonator, filepath: Path = None):
     """ """
+
+    #OUTPUT_FOLDER = Path("/Users/atharvjoshi/Documents/betata/out/beta_ta_on_si")
 
     if filepath is None:
         for resonator_file in OUTPUT_FOLDER.iterdir():
@@ -218,8 +226,9 @@ def map_ls_to_lk(
     """ """
     result = {}
 
-    def fit_fn(x, nsq):
-        return x * nsq * 1e-3  # convert pH to nH
+    # nsq_m has units of length
+    def fit_fn(x, nsq_m):
+        return x * nsq_m * 1e-3  # convert pH to nH
 
     for pitch, group in dataframe.groupby("pitch (um)"):
         sorted_group = group.sort_values(by="l_s (pH/sq)", ascending=True)
@@ -228,7 +237,8 @@ def map_ls_to_lk(
         l_geom = L[0]
         l_kin = L - l_geom
 
-        fit_result = lmfit.Model(fit_fn).fit(l_kin, x=l_sheet, nsq=50)
+        fit_result = lmfit.Model(fit_fn).fit(l_kin, x=l_sheet, nsq_m=50)
         result[pitch] = (l_sheet, l_kin, fit_result)
 
     return result
+

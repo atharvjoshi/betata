@@ -45,15 +45,16 @@ def fit_t2r_trace(
     save_folder=None,
     method="leastsq",
     params=None,
+    n_cutoff=1,
 ) -> lmfit.model.ModelResult:
     """ """
     tau = trace.tau  # seconds
     population = trace.population
 
     # FFT
-    N = len(tau)
+    N = int(len(tau) / n_cutoff)
     dt = tau[1] - tau[0]
-    yf = np.abs(np.fft.fft(population - np.mean(population)))
+    yf = np.abs(np.fft.fft(population - np.mean(population)))[:N]
     xf = np.fft.fftfreq(N, dt)
 
     xf_pos = xf[xf > 0]

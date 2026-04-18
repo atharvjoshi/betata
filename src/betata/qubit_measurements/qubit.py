@@ -62,6 +62,14 @@ class Qubit:
     t2e_avg: float = None
     t2e_avg_err: float = None
 
+    t_phi: np.ndarray = None
+    t_phi_err: np.ndarray = None
+    t_phi_timestamp: np.ndarray = None
+    t_phi_trace_id: np.ndarray = None
+    
+    t_phi_avg: float = None
+    t_phi_avg_err: float = None
+
     @property
     def Delta(self):
         if None in [self.f_r, self.f_q]:
@@ -106,7 +114,7 @@ def load_qubit(filepath: Path) -> Qubit:
             t1_avg=file.attrs["t1_avg"],
             t1_avg_err=file.attrs["t1_avg_err"],
             t2r=file["t2r"]["t2r"][:],
-            t2r_err=file["t2r"]["t2r"][:],
+            t2r_err=file["t2r"]["t2r_err"][:],
             t2r_timestamp=file["t2r"]["t2r_timestamp"][:],
             t2r_trace_id=file["t2r"]["t2r_trace_id"][:],
             t2r_As=file["t2r"]["t2r_As"][:],
@@ -127,6 +135,12 @@ def load_qubit(filepath: Path) -> Qubit:
             t2e_B_err=file["t2e"]["t2e_B_err"][:],
             t2e_avg=file.attrs["t2e_avg"],
             t2e_avg_err=file.attrs["t2e_avg_err"],
+            t_phi=file["t_phi"]["t_phi"][:],
+            t_phi_err=file["t_phi"]["t_phi_err"][:],
+            t_phi_timestamp=file["t_phi"]["t_phi_timestamp"][:],
+            t_phi_trace_id=file["t_phi"]["t_phi_trace_id"][:],
+            t_phi_avg=file.attrs["t_phi_avg"],
+            t_phi_avg_err=file.attrs["t_phi_avg_err"],
         )
 
     # handle None values
@@ -137,7 +151,7 @@ def load_qubit(filepath: Path) -> Qubit:
     return qubit
 
 
-def load_qubits() -> list[Qubit]:
+def load_qubits(names=None) -> list[Qubit]:
     """ """
     qubits: list[Qubit] = []
 
@@ -147,7 +161,11 @@ def load_qubits() -> list[Qubit]:
             continue
 
         qubit = load_qubit(qubit_file)
-        qubits.append(qubit)
+        if names is None:
+            qubits.append(qubit)
+        elif names is not None and qubit.name in names:
+            qubits.append(qubit)
+
     return qubits
 
 
@@ -188,6 +206,13 @@ def save_qubit(qubit: Qubit, filepath: Path = None):
         "t2e_B_err",
     ]
 
+    t_phi_arrs = [
+        "t_phi",
+        "t_phi_err",
+        "t_phi_timestamp",
+        "t_phi_trace_id",
+    ]
+
     if filepath is None:
         for qubit_file in OUTPUT_FOLDER.iterdir():
             if qubit_file.suffix in [".h5", ".hdf5"] and qubit_file.stem == qubit.name:
@@ -195,6 +220,7 @@ def save_qubit(qubit: Qubit, filepath: Path = None):
                 break
 
     with h5py.File(filepath, "a") as file:
+    
         # save attributes
         for key, value in qubit.__dict__.items():
             if key in []:  # ignore these attributes
@@ -229,6 +255,16 @@ def save_qubit(qubit: Qubit, filepath: Path = None):
                     del t2e_group[key]
 
                 t2e_group.create_dataset(key, data=value)
+            elif key in t_phi_arrs:  # save t_phi arrays
+                if value is None:  # create dummy stand-in dataset
+                    value = np.zeros(1)
+
+                t_phi_group = file.require_group("t_phi")
+
+                if key in t_phi_group:  # prepare to overwrite dataset
+                    del t_phi_group[key]
+
+                t_phi_group.create_dataset(key, data=value)
             else:
                 # handle None values
                 if value is None:

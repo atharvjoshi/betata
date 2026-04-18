@@ -55,7 +55,7 @@ if __name__ == "__main__":
     resonator_folder = Path(__file__).parents[4] / "out/resonator_studies"
     resonator_file = resonator_folder / f"{resonator_name}.h5"
 
-    figsavepath = resonator_folder / "power_temp_sweep.png"
+    figsavepath = resonator_folder / f"power_temp_sweep_{resonator_name}.svg"
 
     resonator: Resonator = load_resonator(resonator_file)
     fitted_traces: list[Trace] = load_fitted_traces(resonator_file)
@@ -79,6 +79,9 @@ if __name__ == "__main__":
         qint_errs = np.array([trace.Qi_err for trace in traces])
         qls = np.array([trace.Ql for trace in traces])
         qc = np.mean(np.array([trace.absQc for trace in traces]))
+
+        if power == -90:
+            print(qints)
 
         temps_mK = temps * 1e3
 
@@ -106,17 +109,18 @@ if __name__ == "__main__":
     ax.set_xticks([10, 30, 50, 70, 90, 110, 130], minor=True)
 
     # colorbar legend
-    cbaxes = inset_axes(ax, width="20%", height="4%", loc="upper right", borderpad=2)
+    cbaxes = inset_axes(ax, width="20%", height="4%", loc="upper right", borderpad=1)
     purple_cmap = colors.ListedColormap(purples).reversed()
     purple_norm = colors.Normalize(vmin=-95, vmax=-25)
     sm = ScalarMappable(cmap=purple_cmap, norm=purple_norm)
     cbar = fig.colorbar(sm, cax=cbaxes, orientation="horizontal")
     cbar.set_ticks([-90, -30])
-    cbar.ax.set_title("Power (dBm)")
+    cbar.ax.tick_params(labelsize=16)
+    cbar.ax.set_title("Power (dBm)", fontsize=16)
 
     # ax.legend(frameon=False, loc="center right", bbox_to_anchor=(1.2, 0.7))
 
     fig.tight_layout()
 
-    plt.savefig(figsavepath, dpi=300, bbox_inches="tight")
+    plt.savefig(figsavepath, dpi=600, bbox_inches="tight")
     plt.show()

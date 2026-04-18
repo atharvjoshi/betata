@@ -37,11 +37,13 @@ def get_color_cycle(cmap, num, start, stop):
     return [colormap(i) for i in np.linspace(start, stop, num)]
 
 
-def get_blues(num, start=0.4, stop=0.9):
+def get_blues(num=1, start=0.4, stop=0.9, values=None):
     """ """
+    if values is not None:
+        return [plt.get_cmap("Blues")(i) for i in values]
     return get_color_cycle("Blues", num, start, stop)
 
 
-def get_purples(num, start=0.4, stop=0.9):
+def get_purples(num=1, start=0.4, stop=0.9):
     """ """
     return get_color_cycle("Purples", num, start, stop)

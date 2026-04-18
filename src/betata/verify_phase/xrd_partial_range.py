@@ -147,8 +147,8 @@ if __name__ == "__main__":
         figsize=(8, 5),
     )
 
-    figsavepath = Path(__file__).parents[3] / "out/verify_phase/XRD.png"
+    figsavepath = Path(__file__).parents[3] / "out/verify_phase/XRD.svg"
 
-    plt.savefig(figsavepath, dpi=300, bbox_inches="tight")
+    plt.savefig(figsavepath, dpi=600, bbox_inches="tight")
 
     plt.show()

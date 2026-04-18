@@ -22,7 +22,7 @@ if __name__ == "__main__":
     resonator_folder = Path(__file__).parents[4] / "out/resonator_studies"
     resonator_file = resonator_folder / f"{resonator_name}.h5"
 
-    figsavepath = resonator_folder / "circle_fit.png"
+    figsavepath = resonator_folder / "circle_fit.svg"
 
     raw_traces: list[Trace] = load_traces(data_folder)
     fitted_traces: list[Trace] = load_fitted_traces(resonator_file)
@@ -84,5 +84,5 @@ if __name__ == "__main__":
 
     fig.tight_layout()
 
-    plt.savefig(figsavepath, dpi=300, bbox_inches="tight")
+    plt.savefig(figsavepath, dpi=600, bbox_inches="tight")
     plt.show()

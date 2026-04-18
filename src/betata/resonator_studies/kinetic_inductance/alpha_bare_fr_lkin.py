@@ -30,8 +30,7 @@ def find_l_kin(l_geom: float, alpha: float) -> float:
 
 
 def find_fr_bare(resonator: Resonator) -> float | None:
-    """
-    """
+    """ """
     MAX_TEMP = 15e-3
     MIN_POWER, MAX_POWER = -50, -40
     # traces are pre-sorted by power (decreasing) and temperature (increasing)
@@ -41,6 +40,13 @@ def find_fr_bare(resonator: Resonator) -> float | None:
             if trace.temperature <= MAX_TEMP and MIN_POWER <= trace.power <= MAX_POWER:
                 frs_bare.append(trace.fr)
     return np.mean(np.array(frs_bare))
+
+
+def find_Qc(resonator: Resonator) -> float:
+    """ """
+    return np.mean(
+        np.array([tr.absQc for tr in resonator.traces if not tr.is_excluded])
+    )
 
 
 if __name__ == "__main__":
@@ -61,5 +67,6 @@ if __name__ == "__main__":
         resonator.alpha_bare_err = u_alpha_bare.s
         resonator.l_kin = u_l_kin.n
         resonator.l_kin_err = u_l_kin.s
-
+        resonator.Q_c = find_Qc(resonator)
+       
         save_resonator(resonator)

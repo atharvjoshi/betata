@@ -48,7 +48,7 @@ def plot_data(x, y, yerr, figsize=(9, 6), ylim=(1e5, 2e7), xlim=(3e-3, 0.5e-4)):
     ax.set_yscale("log")
     ax.invert_xaxis()
 
-    ax.set_xlabel(r"Surface participation ratio ($p_{\mathrm{MS}})$")
+    ax.set_xlabel(r"Surface participation ratio, $p_{\mathrm{MS}}$")
     ax.set_ylabel(r"$Q_{\mathrm{TLS,0}}$")
 
     ax.errorbar(
@@ -122,7 +122,7 @@ if __name__ == "__main__":
 
     resonator_folder = Path(__file__).parents[4] / "out/resonator_studies"
     resonators = load_resonators(resonator_folder)
-    figsavepath = resonator_folder / "wang_plot.png"
+    figsavepath = resonator_folder / "wang_plot.svg"
 
     min_thickness, max_thickness = 0e-9, 2000e-9
 
@@ -169,7 +169,7 @@ if __name__ == "__main__":
     )
 
     print(result.fit_report())
-    print(result.params.pretty_print())
+    print(len(q_tls0))
 
     axis = add_bulk_loss_tangent(
         SAPPHIRE_TAN_DELTA.n,
@@ -199,10 +199,10 @@ if __name__ == "__main__":
         *p_ms_lim,
         tan_delta_err=bta_tan_delta_err,
         color=BTA_COLOR,
-        #ls="--",
+        # ls="--",
         label=r"$\mathrm{\beta}$-Ta",
     )
 
     plt.legend(loc="lower right", frameon=False)
-    plt.savefig(figsavepath, dpi=300, bbox_inches="tight")
+    plt.savefig(figsavepath, dpi=600, bbox_inches="tight")
     plt.show()

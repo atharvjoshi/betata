@@ -6,12 +6,12 @@ from pathlib import Path
 import numpy as np
 from uncertainties import ufloat
 
-from betata import plt
-from betata.resonator_studies.resonator import Resonator, load_resonator
+from betata import plt, get_blues, get_purples
+from betata.resonator_studies.resonator import load_resonators
 
-ATA_COLOR = "#FF7900"
-BTA_COLOR = "#762A83"
-SAPPHIRE_COLOR = "#474A51"
+ATA_COLOR = "darkorange" #"#FF7900"
+BTA_COLOR = get_purples(1, 1.0, 1.0)[0]
+SAPPHIRE_COLOR = "k" #"#474A51"
 FILL_TRANSPARENCY = 0.25
 
 ATA_TAN_DELTA = ufloat(8.1e-4, 0.6e-4)
@@ -29,18 +29,7 @@ COLOR_LIST = [
     "#08519c",
     "#08306b",
 ]
-
-
-def load_resonators(folder: Path) -> list[Resonator]:
-    """ """
-    resonators = []
-    for file in folder.iterdir():
-        if file.suffix not in [".h5", ".hdf5"]:
-            continue
-
-        resonator = load_resonator(file)
-        resonators.append(resonator)
-    return resonators
+BLUES = get_blues(values=[0.20, 0.30, 0.45, 0.60, 0.75, 0.90, 1.0])
 
 
 def fit_delta_surf_sub(x, tan_delta_surf, tan_delta_sub, p_sub):
@@ -50,7 +39,7 @@ def fit_delta_surf_sub(x, tan_delta_surf, tan_delta_sub, p_sub):
 
 def plot_data(
     data,
-    figsize=(10, 8),
+    figsize=(10, 7),
     ylim=(1e5, 2e7),
     xlim=(3e-3, 0.5e-4),
 ):
@@ -64,16 +53,20 @@ def plot_data(
     ax.set_ylabel(r"$Q_{\mathrm{TLS,0}}$")
 
     for thickness, lists in data.items():
-        if 50e-9 < thickness < 60e-9:
-            label, color = LABEL_LIST[0], COLOR_LIST[0]
-        elif 95e-9 < thickness < 140e-9:
-            label, color = LABEL_LIST[1], COLOR_LIST[1]
-        elif 199e-9 < thickness < 250e-9:
-            label, color = LABEL_LIST[2], COLOR_LIST[2]
-        elif 399e-9 < thickness < 480e-9:
-            label, color = LABEL_LIST[3], COLOR_LIST[3]
-        elif 990e-9 < thickness < 1010e-9:
-            label, color = LABEL_LIST[4], COLOR_LIST[4]
+        if 0.0 < thickness < 0.025:
+            color = BLUES[0]
+        elif 0.025 < thickness < 0.06:
+            color = BLUES[1]
+        elif 0.06 < thickness < 0.15:
+            color = BLUES[2]
+        elif 0.15 < thickness < 0.3:
+            color = BLUES[3]
+        elif 0.3 < thickness < 0.5:
+            color = BLUES[4]
+        elif 0.5 < thickness < 1.2:
+            color = BLUES[5]
+        else:
+            color = BLUES[6]
 
         ax.errorbar(
             lists["p_ms"],
@@ -82,17 +75,16 @@ def plot_data(
             c=color,
             ls="",
             marker="o",
-            label=label,
         )
 
     ax.set_xlim(*xlim)
     ax.set_ylim(*ylim)
 
     # prevent duplicate labels
-    handles, labels = plt.gca().get_legend_handles_labels()
-    unique_labels = dict(zip(labels, handles))
-    leg = plt.legend(unique_labels.values(), unique_labels.keys(), loc="lower right")
-    ax.add_artist(leg)
+    #handles, labels = plt.gca().get_legend_handles_labels()
+    #unique_labels = dict(zip(labels, handles))
+    #leg = plt.legend(unique_labels.values(), unique_labels.keys(), loc="lower right")
+    #ax.add_artist(leg)
 
     fig.tight_layout()
 
@@ -148,8 +140,8 @@ if __name__ == "__main__":
     """ """
 
     resonator_folder = Path(__file__).parents[4] / "out/resonator_studies"
-    resonators = load_resonators(resonator_folder)
-    figsavepath = resonator_folder / "wang_plot_by_thickness.png"
+    resonators = load_resonators()
+    figsavepath = resonator_folder / "wang_plot_by_thickness.svg"
 
     min_thickness, max_thickness = -np.inf, np.inf
 
@@ -159,12 +151,12 @@ if __name__ == "__main__":
         if resonator.qpt_fit_params is None:
             continue
 
-        thickness = resonator.film_thickness
+        thickness = resonator.film_thickness * 1e6
         if not min_thickness < thickness < max_thickness:
             continue
 
         q_tls0_param = resonator.qpt_fit_params["Q_TLS0"]
-    
+
         if q_tls0_param["stderr"] / q_tls0_param["value"] > REJECTION_THRESHOLD:
             continue
 
@@ -173,7 +165,7 @@ if __name__ == "__main__":
         data[thickness]["p_ms"].append(resonator.p_ms)
 
     p_ms_lim = (3e-3, 0.5e-4)
-    q_tls0_lim = (1e5, 2e7)
+    q_tls0_lim = (1e5, 1.5e7)
 
     figure, axis = plot_data(
         data,
@@ -205,13 +197,13 @@ if __name__ == "__main__":
         BTA_TAN_DELTA.n,
         axis,
         *p_ms_lim,
-        tan_delta_err=BTA_TAN_DELTA.s,
+        #tan_delta_err=BTA_TAN_DELTA.s,
         color=BTA_COLOR,
-        ls="--",
+        #ls="--",
         label=r"$\beta\mathrm{-Ta}$",
     )
 
-    axis.legend(handles=[line1, line2, line3], loc="center right")
-    plt.savefig(figsavepath, dpi=300, bbox_inches="tight")
+    axis.legend(handles=[line1, line2, line3], frameon=False)
+    plt.savefig(figsavepath, dpi=600, bbox_inches="tight")
 
     plt.show()
